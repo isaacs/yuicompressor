@@ -526,6 +526,7 @@ public class JavaScriptCompressor {
     private ArrayList tokens;
     private Stack scopes = new Stack();
     private ScriptOrFnScope globalScope = new ScriptOrFnScope(-1, null);
+    private ScriptOrFnScope objectProperties = new ScriptOrFnScope(-2, null);
     private Hashtable indexedScopes = new Hashtable();
 
     public JavaScriptCompressor(Reader in, ErrorReporter reporter)
@@ -852,6 +853,15 @@ public class JavaScriptCompressor {
                             protectScopeFromObfuscation(currentScope);
                             warn("Using 'eval' is not recommended." + (munge ? " Moreover, using 'eval' reduces the level of compression!" : ""), true);
 
+                        } else if (offset >= 2 && getToken(-2).getType() == Token.DOT ||
+                                getToken(0).getType() == Token.OBJECTLIT) {
+
+                            if (isValidIdentifier(symbol)) {
+                                identifier = objectProperties.getIdentifier(symbol);
+                                if (identifier == null) {
+                                    identifier = objectProperties.declareIdentifier(symbol, false);
+                                }
+                            }
                         }
 
                     } else if (mode == CHECKING_SYMBOL_TREE) {
@@ -990,6 +1000,15 @@ public class JavaScriptCompressor {
                             protectScopeFromObfuscation(scope);
                             warn("Using 'eval' is not recommended." + (munge ? " Moreover, using 'eval' reduces the level of compression!" : ""), true);
 
+                        } else if (offset >= 2 && getToken(-2).getType() == Token.DOT ||
+                                getToken(0).getType() == Token.OBJECTLIT) {
+
+                            if (isValidIdentifier(symbol)) {
+                                identifier = objectProperties.getIdentifier(symbol);
+                                if (identifier == null) {
+                                    identifier = objectProperties.declareIdentifier(symbol, false);
+                                }
+                            }
                         }
 
                     } else if (mode == CHECKING_SYMBOL_TREE) {
@@ -1064,6 +1083,9 @@ public class JavaScriptCompressor {
         mode = CHECKING_SYMBOL_TREE;
         parseScope(globalScope);
         globalScope.munge();
+
+        // munge object properties
+        objectProperties.munge();
     }
 
     private StringBuffer printSymbolTree(int linebreakpos, boolean preserveAllSemiColons)
@@ -1080,8 +1102,6 @@ public class JavaScriptCompressor {
 
         ArrayList scopesDeclaredVars = new ArrayList();
         ArrayList noVarDeclIdentifier = new ArrayList();
-
-        ScriptOrFnScope objectProperties = new ScriptOrFnScope(-2, null);
 
         int length = tokens.size();
         StringBuffer result = new StringBuffer();
@@ -1145,16 +1165,9 @@ public class JavaScriptCompressor {
                     if (offset >= 2 && getToken(-2).getType() == Token.DOT ||
                             getToken(0).getType() == Token.OBJECTLIT) {
 
-                        if (isValidIdentifier(symbol)) {
-
-                            identifier = objectProperties.getIdentifier(symbol);
-                            if (identifier == null) {
-                                identifier = objectProperties.declareIdentifier(symbol, false);
-                                identifier.setMungedValue(objectProperties.getNextFreeSymbol());
-                            }
-
+                        identifier = objectProperties.getIdentifier(symbol);
+                        if (identifier != null) {
                             result.append(identifier.getMungedValue());
-                            //System.out.println(symbol + " " + identifier.getMungedValue());
                         } else {
                             result.append(symbol);
                         }
@@ -1330,20 +1343,18 @@ public class JavaScriptCompressor {
 
                 case Token.SEMI:
 
-                    boolean newLine = linebreakpos >= 0 && result.length() - linestartpos > linebreakpos;
-
-                    // No need to output a semi-colon if the next character is a right-curly...
-                    if (!newLine && (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC)) {
-                        result.append(';');
-                    }
-
-                    if (newLine) {
+                    if (linebreakpos >= 0 && result.length() - linestartpos > linebreakpos) {
                         // Some source control tools don't like it when files containing lines longer
                         // than, say 8000 characters, are checked in. The linebreak option is used in
                         // that case to split long lines after a specific column.
                         result.append('\n');
                         linestartpos = result.length();
+
+                    // No need to output a semi-colon if the next character is a right-curly...
+                    } else if (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC) {
+                        result.append(';');
                     }
+
                     break;
 
                 case Token.SPECIALCOMMENT:
