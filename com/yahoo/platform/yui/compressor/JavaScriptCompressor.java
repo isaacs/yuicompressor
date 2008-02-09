@@ -241,6 +241,9 @@ public class JavaScriptCompressor {
         reserved.add("NaN");
         reserved.add("null");
         reserved.add("undefined");
+        // these are to prevent munging of object access properties
+        reserved.add("prototype");
+        reserved.add("alert");
     }
 
     private static int countChar(String haystack, char needle) {
@@ -1074,8 +1077,11 @@ public class JavaScriptCompressor {
         JavaScriptToken token;
         ScriptOrFnScope currentScope, currentVarScope;
         JavaScriptIdentifier identifier;
+
         ArrayList scopesDeclaredVars = new ArrayList();
         ArrayList noVarDeclIdentifier = new ArrayList();
+
+        ScriptOrFnScope objectProperties = new ScriptOrFnScope(-2, null);
 
         int length = tokens.size();
         StringBuffer result = new StringBuffer();
@@ -1083,11 +1089,11 @@ public class JavaScriptCompressor {
         int linestartpos = 0;
 
         enterScope(globalScope);
-        
-        // skip global scope var declarations
+
+        // skip global scope variables declarations
         scopesDeclaredVars.add(globalScope);
         currentVarScope = globalScope;
-        
+
         while (offset < length) {
 
             token = consumeToken();
@@ -1100,7 +1106,7 @@ public class JavaScriptCompressor {
                 ArrayList declaredIdentifiers = currentScope.getDeclaredIdentifiers();
                 
                 int len = declaredIdentifiers.size();
-                if (len > 1) {
+                if (len > 0) {
                     ArrayList vars = new ArrayList();
                     for (int i = 0; i<len; i++) {
                         identifier = (JavaScriptIdentifier) declaredIdentifiers.get(i);
@@ -1115,17 +1121,20 @@ public class JavaScriptCompressor {
                             noVarDeclIdentifier.add(identifier);
                         }
                     }
-                    if (vars.size() > 0) {
+                    // if there is only one local variable
+                    // don't declare it at the beginning of the scope
+                    if (vars.size() > 1) {
                         result.append("var ");
                         for(Object s : vars) {
                             result.append(s);
                             result.append(',');
                         }
-                        result.deleteCharAt(result.length()-1);
+                        result.deleteCharAt(result.length() - 1);
                         result.append(';');
+                    // instead mark it as undeclared
+                    } else if (vars.size() > 0) {
+                        noVarDeclIdentifier.add((JavaScriptIdentifier)declaredIdentifiers.get(0));
                     }
-                } else if (len > 0) {
-                    noVarDeclIdentifier.add(declaredIdentifiers.get(0));
                 }
             }
 
@@ -1136,7 +1145,19 @@ public class JavaScriptCompressor {
                     if (offset >= 2 && getToken(-2).getType() == Token.DOT ||
                             getToken(0).getType() == Token.OBJECTLIT) {
 
-                        result.append(symbol);
+                        if (isValidIdentifier(symbol)) {
+
+                            identifier = objectProperties.getIdentifier(symbol);
+                            if (identifier == null) {
+                                identifier = objectProperties.declareIdentifier(symbol, false);
+                                identifier.setMungedValue(objectProperties.getNextFreeSymbol());
+                            }
+
+                            result.append(identifier.getMungedValue());
+                            //System.out.println(symbol + " " + identifier.getMungedValue());
+                        } else {
+                            result.append(symbol);
+                        }
 
                     } else {
 
@@ -1308,9 +1329,9 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.SEMI:
-                    
+
                     boolean newLine = linebreakpos >= 0 && result.length() - linestartpos > linebreakpos;
-                    
+
                     // No need to output a semi-colon if the next character is a right-curly...
                     if (!newLine && (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC)) {
                         result.append(';');

@@ -106,7 +106,7 @@ class ScriptOrFnScope {
         int pickFromSet = 1;
 
         // Do not munge symbols in the global scope!
-        if (parentScope != null) {
+        //if (true||parentScope != null) {
 
             ArrayList freeSymbols = new ArrayList();
 
@@ -153,11 +153,31 @@ class ScriptOrFnScope {
                 }
                 identifier.setMungedValue(mungedValue);
             }
-        }
+        //}
 
         for (int i = 0; i < subScopes.size(); i++) {
             ScriptOrFnScope scope = (ScriptOrFnScope) subScopes.get(i);
             scope.munge();
         }
+    }
+
+    public String getNextFreeSymbol()
+    {
+        ArrayList<String> freeSymbols = new ArrayList<String>();
+
+        freeSymbols.addAll(JavaScriptCompressor.ones);
+        freeSymbols.removeAll(getAllUsedSymbols());
+        if (freeSymbols.size() == 0) {
+            freeSymbols.addAll(JavaScriptCompressor.twos);
+            freeSymbols.removeAll(getAllUsedSymbols());
+            if (freeSymbols.size() == 0) {
+                freeSymbols.addAll(JavaScriptCompressor.threes);
+                freeSymbols.removeAll(getAllUsedSymbols());
+                if (freeSymbols.size() == 0) {
+                    throw new IllegalStateException("The YUI Compressor ran out of symbols. Aborting...");
+                }
+            }
+        }
+        return freeSymbols.remove(0);
     }
 }
