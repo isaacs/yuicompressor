@@ -1308,12 +1308,15 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.SEMI:
+                    
+                    boolean newLine = linebreakpos >= 0 && result.length() - linestartpos > linebreakpos;
+                    
                     // No need to output a semi-colon if the next character is a right-curly...
-                    if (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC) {
+                    if (!newLine && (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC)) {
                         result.append(';');
                     }
 
-                    if (linebreakpos >= 0 && result.length() - linestartpos > linebreakpos) {
+                    if (newLine) {
                         // Some source control tools don't like it when files containing lines longer
                         // than, say 8000 characters, are checked in. The linebreak option is used in
                         // that case to split long lines after a specific column.
