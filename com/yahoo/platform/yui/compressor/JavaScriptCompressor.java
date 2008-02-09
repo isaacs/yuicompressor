@@ -658,7 +658,7 @@ public class JavaScriptCompressor {
                 if (currentScope.getIdentifier(symbol) != null) {
                     warn("The function " + symbol + " has already been declared in the same scope...", true);
                 }
-                currentScope.declareIdentifier(symbol);
+                currentScope.declareIdentifier(symbol, false);
             }
             token = consumeToken();
         }
@@ -678,7 +678,7 @@ public class JavaScriptCompressor {
                     token.getType() == Token.COMMA;
             if (token.getType() == Token.NAME && mode == BUILDING_SYMBOL_TREE) {
                 symbol = token.getValue();
-                identifier = fnScope.declareIdentifier(symbol);
+                identifier = fnScope.declareIdentifier(symbol, false);
                 if (symbol.equals("$super") && argpos == 0) {
                     // Exception for Prototype 1.6...
                     identifier.preventMunging();
@@ -760,7 +760,7 @@ public class JavaScriptCompressor {
             // We must declare the exception identifier in the containing function
             // scope to avoid errors related to the obfuscation process. No need to
             // display a warning if the symbol was already declared here...
-            currentScope.declareIdentifier(symbol);
+            currentScope.declareIdentifier(symbol, false);
         } else {
             identifier = getIdentifier(symbol, currentScope);
             identifier.incrementRefcount();
@@ -868,7 +868,7 @@ public class JavaScriptCompressor {
                                     // 3 characters or less in length. Declare it in the global scope.
                                     // We don't need to declare longer symbols since they won't cause
                                     // any conflict with other munged symbols.
-                                    globalScope.declareIdentifier(symbol);
+                                    globalScope.declareIdentifier(symbol, false);
                                     warn("Found an undeclared symbol: " + symbol, true);
                                 }
 
@@ -900,13 +900,6 @@ public class JavaScriptCompressor {
             switch (token.getType()) {
 
                 case Token.VAR:
-
-                    if (mode == BUILDING_SYMBOL_TREE && scope.incrementVarCount() > 1) {
-                        warn("Try to use a single 'var' statement per scope.", true);
-                    }
-
-                    /* FALLSTHROUGH */
-
                 case Token.CONST:
 
                     // The var keyword is followed by at least one symbol name.
@@ -919,7 +912,7 @@ public class JavaScriptCompressor {
                         if (mode == BUILDING_SYMBOL_TREE) {
                             symbol = token.getValue();
                             if (scope.getIdentifier(symbol) == null) {
-                                scope.declareIdentifier(symbol);
+                                scope.declareIdentifier(symbol, true);
                             } else {
                                 warn("The variable " + symbol + " has already been declared in the same scope...", true);
                             }
@@ -1010,7 +1003,7 @@ public class JavaScriptCompressor {
                                     // 3 characters or less in length. Declare it in the global scope.
                                     // We don't need to declare longer symbols since they won't cause
                                     // any conflict with other munged symbols.
-                                    globalScope.declareIdentifier(symbol);
+                                    globalScope.declareIdentifier(symbol, false);
                                     warn("Found an undeclared symbol: " + symbol, true);
                                 }
 
@@ -1079,8 +1072,10 @@ public class JavaScriptCompressor {
 
         String symbol;
         JavaScriptToken token;
-        ScriptOrFnScope currentScope;
+        ScriptOrFnScope currentScope, currentVarScope;
         JavaScriptIdentifier identifier;
+        ArrayList scopesDeclaredVars = new ArrayList();
+        ArrayList noVarDeclIdentifier = new ArrayList();
 
         int length = tokens.size();
         StringBuffer result = new StringBuffer();
@@ -1088,12 +1083,51 @@ public class JavaScriptCompressor {
         int linestartpos = 0;
 
         enterScope(globalScope);
-
+        
+        // skip global scope var declarations
+        scopesDeclaredVars.add(globalScope);
+        currentVarScope = globalScope;
+        
         while (offset < length) {
 
             token = consumeToken();
             symbol = token.getValue();
             currentScope = getCurrentScope();
+            
+            if (currentVarScope != currentScope && !scopesDeclaredVars.contains(currentScope)) {
+                currentVarScope = currentScope;
+                scopesDeclaredVars.add(currentScope);
+                ArrayList declaredIdentifiers = currentScope.getDeclaredIdentifiers();
+                
+                int len = declaredIdentifiers.size();
+                if (len > 1) {
+                    ArrayList vars = new ArrayList();
+                    for (int i = 0; i<len; i++) {
+                        identifier = (JavaScriptIdentifier) declaredIdentifiers.get(i);
+                        if (identifier.declareAsVar()) {
+                            String mungedValue = identifier.getMungedValue();
+                            if (mungedValue != null) {
+                                vars.add(mungedValue);
+                            } else {
+                                vars.add(identifier.getValue());
+                            }
+                        } else {
+                            noVarDeclIdentifier.add(identifier);
+                        }
+                    }
+                    if (vars.size() > 0) {
+                        result.append("var ");
+                        for(Object s : vars) {
+                            result.append(s);
+                            result.append(',');
+                        }
+                        result.deleteCharAt(result.length()-1);
+                        result.append(';');
+                    }
+                } else if (len > 0) {
+                    noVarDeclIdentifier.add(declaredIdentifiers.get(0));
+                }
+            }
 
             switch (token.getType()) {
 
@@ -1123,9 +1157,17 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.REGEXP:
-                case Token.NUMBER:
                 case Token.STRING:
                     result.append(symbol);
+                    break;
+
+                case Token.NUMBER:
+                    // cut of leading zero
+                    if (symbol.startsWith("0.")) {
+                        result.append(symbol.substring(1));
+                    } else {
+                        result.append(symbol);
+                    }
                     break;
 
                 case Token.ADD:
@@ -1287,6 +1329,14 @@ public class JavaScriptCompressor {
                     result.append("/*");
                     result.append(symbol);
                     result.append("*/\n");
+                    break;
+                    
+                case Token.VAR:
+                    token = getToken(0);
+                    identifier = currentScope.getIdentifier(token.getValue());
+                    if (identifier != null && identifier.getType() == Token.NAME && noVarDeclIdentifier.contains(identifier)) {
+                        result.append("var ");
+                    }
                     break;
 
                 default:
