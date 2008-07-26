@@ -244,6 +244,7 @@ public class JavaScriptCompressor {
         // these are to prevent munging of object access properties
         reserved.add("prototype");
         reserved.add("alert");
+        reserved.add("length");
     }
 
     private static int countChar(String haystack, char needle) {
@@ -305,6 +306,13 @@ public class JavaScriptCompressor {
             sb.append(ScriptRuntime.numberToString(number, 10));
         }
         return offset;
+    }
+
+    private static JavaScriptIdentifier getRootIdentifier(JavaScriptIdentifier identifier) {
+    	while (identifier.getParent() != null) {
+    		identifier = identifier.getParent();
+    	}
+    	return identifier;
     }
 
     private static ArrayList parse(Reader in, ErrorReporter reporter)
@@ -524,9 +532,10 @@ public class JavaScriptCompressor {
     private int offset;
     private int braceNesting;
     private ArrayList tokens;
+    private Hashtable<String, String> objectPropertiesMapping;
     private Stack scopes = new Stack();
     private ScriptOrFnScope globalScope = new ScriptOrFnScope(-1, null);
-    private ScriptOrFnScope objectProperties = new ScriptOrFnScope(-2, null);
+    private ScriptOrFnScope objectProperties = new ScriptOrFnScope(-2, globalScope);
     private Hashtable indexedScopes = new Hashtable();
 
     public JavaScriptCompressor(Reader in, ErrorReporter reporter)
@@ -543,6 +552,11 @@ public class JavaScriptCompressor {
         this.munge = munge;
         this.verbose = verbose;
 
+        objectPropertiesMapping = new Hashtable();
+        objectPropertiesMapping.put("console", "");
+        objectPropertiesMapping.put("my.namespace.notMunged", "");
+        objectPropertiesMapping.put("my.namespace.renameIt", "my.namespace.newName");
+
         processStringLiterals(this.tokens, !disableOptimizations);
 
         if (!disableOptimizations) {
@@ -556,6 +570,60 @@ public class JavaScriptCompressor {
         StringBuffer sb = printSymbolTree(linebreak, preserveAllSemiColons);
 
         out.write(sb.toString());
+    }
+
+    // Returns null if this property should not be munged
+    // empty string if munged value should be auto generated
+    // or munged value
+    private String getObjectPropertyMungedValue(String s) {
+        if (isValidIdentifier(s)) {
+        	StringBuilder sb = new StringBuilder();
+        	sb.append(s);
+        	int i = -2;
+        	while (offset + i > 0  && getToken(i).getType() == Token.DOT &&
+        			getToken(i-1).getType() == Token.NAME) {
+        		sb.insert(0, '.');
+        		sb.insert(0, getToken(i-1).getValue());
+        		i -= 2;
+        	}
+
+        	boolean last = false;
+        	String mungedValue;
+        	System.out.println(sb);
+        	do {
+        		
+        		if (sb.toString().startsWith("my.namespace")) {
+        			//System.out.println('\n' + sb.toString() + '\n');
+        		}
+        		
+        		mungedValue = objectPropertiesMapping.get(sb.toString());
+        		if (mungedValue != null) {
+	        		if (mungedValue.equals("")) {
+	        			System.out.println("no munge: " +sb);
+	        			return null;
+	        		} else {
+	        			System.out.println("munge: " + sb + " " + mungedValue);
+	            		int dot = mungedValue.lastIndexOf(".");
+	            		if (dot > 0 ) {
+	            			return mungedValue.substring(dot + 1);
+	            		} else {
+	            			return mungedValue;
+	            		}
+	        		}
+        		}
+        		if (last) {
+        			break;
+        		}
+        		int dot = sb.lastIndexOf(".");
+        		if (dot > 0 ) {
+            		sb.setLength(dot);
+        		} else {
+        			last = true;
+        		}
+        	} while (true);
+        	return "";
+        }
+        return null;
     }
 
     private ScriptOrFnScope getCurrentScope() {
@@ -791,6 +859,9 @@ public class JavaScriptCompressor {
 
         int length = tokens.size();
 
+        ArrayList<JavaScriptIdentifier> list = new ArrayList<JavaScriptIdentifier>();
+
+
         while (offset < length) {
 
             token = consumeToken();
@@ -812,6 +883,22 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.LC:
+
+                	if (braceNesting == expressionBraceNesting) {
+	                	token = getToken(-2);
+	                	if (token.getType() == Token.ASSIGN || token.getType() == Token.OBJECTLIT) {
+	                		//list.add(new JavaScriptIdentifier(getToken(-3).getValue(), currentScope, null));
+	                		identifier = currentScope.getIdentifier(getToken(-3).getValue());
+	                		if (identifier != null) {
+	                			list.add(identifier);
+	                			System.out.println("OK: " + identifier.getValue());
+	                		} else {
+	                			System.out.println("OMG: " + getToken(-3).getValue());
+	                		}
+	                	} else {
+	                		System.out.println("WTF: " + token.getValue());
+	                	}
+                	}
                     braceNesting++;
                     break;
 
@@ -856,12 +943,60 @@ public class JavaScriptCompressor {
                         } else if (offset >= 2 && getToken(-2).getType() == Token.DOT ||
                                 getToken(0).getType() == Token.OBJECTLIT) {
 
-                            if (isValidIdentifier(symbol)) {
-                                identifier = objectProperties.getIdentifier(symbol);
-                                if (identifier == null) {
-                                    identifier = objectProperties.declareIdentifier(symbol, false);
+                        	//*
+                        	if (getToken(0).getType() == Token.OBJECTLIT) {
+	                        	//for (JavaScriptIdentifier i: list) {
+	                        	//	System.out.print(i.getValue());
+	                        	//	System.out.print('.');
+	                        	//}
+                        		//if (list.size() > 0) {
+		                        	identifier = list.get(list.size()-1);
+		                        	assert identifier != null;
+		                        	identifier.addProperty(token.getValue());
+		                        	System.out.println(identifier.getFullName());
+                        		//} else {
+                        		//	System.out.println(getToken(-1).getValue());
+                        		//}
+                        	}
+                        	// */
+
+                        	/*
+                        	if (getToken(0).getType() == Token.OBJECTLIT) {
+                        		System.out.println(symbol);
+                        		//expressionBraceNesting = braceNesting
+                        		int BN = braceNesting;
+                        		JavaScriptToken token2;
+                        		int i = -1;
+                        		assert BN >= expressionBraceNesting;
+                        		while (offset + i >= 0 && BN >= expressionBraceNesting) {
+                        			token2 = getToken(i);
+                        			switch (token2.getType()) {
+                        				case Token.NAME:
+                        					System.out.println(token2.getValue());
+                        					break;
+                        				case Token.RB:
+                        					BN--;
+                        					break;
+                        			}
+                        			i--;
+                        		}
+                        	}
+                        	// */
+
+                        	/*
+
+                            identifier = objectProperties.getIdentifier(symbol);
+                            if (identifier == null) {
+                            	String mungedValue = getObjectPropertyMungedValue(symbol);
+                            	identifier = objectProperties.declareIdentifier(symbol, false);
+                            	if (mungedValue == null) {
+                            		System.out.println("null: " + symbol);
+                            		identifier.preventMunging();
+                                } else if (!mungedValue.equals("")) {
+                                	identifier.setMungedValue(mungedValue);
                                 }
                             }
+                            // */
                         }
 
                     } else if (mode == CHECKING_SYMBOL_TREE) {
@@ -1003,12 +1138,18 @@ public class JavaScriptCompressor {
                         } else if (offset >= 2 && getToken(-2).getType() == Token.DOT ||
                                 getToken(0).getType() == Token.OBJECTLIT) {
 
-                            if (isValidIdentifier(symbol)) {
-                                identifier = objectProperties.getIdentifier(symbol);
-                                if (identifier == null) {
-                                    identifier = objectProperties.declareIdentifier(symbol, false);
+                        	/*
+                            identifier = objectProperties.getIdentifier(symbol);
+                            if (identifier == null) {
+                            	String mungedValue = getObjectPropertyMungedValue(symbol);
+                            	identifier = objectProperties.declareIdentifier(symbol, false);
+                            	if (mungedValue == null) {
+                            		identifier.preventMunging();
+                                } else if (!mungedValue.equals("")) {
+                                	identifier.setMungedValue(mungedValue);
                                 }
                             }
+                            // */
                         }
 
                     } else if (mode == CHECKING_SYMBOL_TREE) {
@@ -1083,9 +1224,6 @@ public class JavaScriptCompressor {
         mode = CHECKING_SYMBOL_TREE;
         parseScope(globalScope);
         globalScope.munge();
-
-        // munge object properties
-        objectProperties.munge();
     }
 
     private StringBuffer printSymbolTree(int linebreakpos, boolean preserveAllSemiColons)
@@ -1153,7 +1291,7 @@ public class JavaScriptCompressor {
                         result.append(';');
                     // instead mark it as undeclared
                     } else if (vars.size() > 0) {
-                        noVarDeclIdentifier.add((JavaScriptIdentifier)declaredIdentifiers.get(0));
+                        noVarDeclIdentifier.add(currentScope.getIdentifier((String)vars.get(0)));
                     }
                 }
             }
@@ -1343,6 +1481,11 @@ public class JavaScriptCompressor {
 
                 case Token.SEMI:
 
+                    // No need to output a semi-colon if the next character is a right-curly...
+                	if (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC) {
+                        result.append(';');
+                    }
+
                     if (linebreakpos >= 0 && result.length() - linestartpos > linebreakpos) {
                         // Some source control tools don't like it when files containing lines longer
                         // than, say 8000 characters, are checked in. The linebreak option is used in
@@ -1350,9 +1493,6 @@ public class JavaScriptCompressor {
                         result.append('\n');
                         linestartpos = result.length();
 
-                    // No need to output a semi-colon if the next character is a right-curly...
-                    } else if (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC) {
-                        result.append(';');
                     }
 
                     break;

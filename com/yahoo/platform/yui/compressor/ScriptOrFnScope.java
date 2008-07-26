@@ -106,7 +106,7 @@ class ScriptOrFnScope {
         int pickFromSet = 1;
 
         // Do not munge symbols in the global scope!
-        //if (parentScope != null) {
+        if (parentScope != null) {
 
             ArrayList freeSymbols = new ArrayList();
 
@@ -144,16 +144,18 @@ class ScriptOrFnScope {
                     freeSymbols.removeAll(getAllUsedSymbols());
                 }
 
-                String mungedValue;
                 JavaScriptIdentifier identifier = (JavaScriptIdentifier) elements.nextElement();
-                if (identifier.isMarkedForMunging()) {
-                    mungedValue = (String) freeSymbols.remove(0);
-                } else {
-                    mungedValue = identifier.getValue();
+                String mungedValue = identifier.getMungedValue();
+                if (mungedValue == null) {
+	                if (identifier.isMarkedForMunging()) {
+	                    mungedValue = (String) freeSymbols.remove(0);
+	                } else {
+	                    mungedValue = identifier.getValue();
+	                }
                 }
                 identifier.setMungedValue(mungedValue);
             }
-        //}
+        }
 
         for (int i = 0; i < subScopes.size(); i++) {
             ScriptOrFnScope scope = (ScriptOrFnScope) subScopes.get(i);

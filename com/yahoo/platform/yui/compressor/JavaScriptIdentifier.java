@@ -8,6 +8,9 @@
 
 package com.yahoo.platform.yui.compressor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.mozilla.javascript.Token;
 
 /**
@@ -20,11 +23,20 @@ class JavaScriptIdentifier extends JavaScriptToken {
     private ScriptOrFnScope declaredScope;
     private boolean markedForMunging = true;
     private boolean declareAsVar;
+    private JavaScriptIdentifier parentIdentifier = null;
+    private HashMap<String, JavaScriptIdentifier> properties = new HashMap<String, JavaScriptIdentifier>();
 
     JavaScriptIdentifier(String value, ScriptOrFnScope declaredScope, boolean declareAsVar) {
         super(Token.NAME, value);
         this.declaredScope = declaredScope;
         this.declareAsVar = declareAsVar;
+    }
+
+    JavaScriptIdentifier(String value, ScriptOrFnScope declaredScope, JavaScriptIdentifier parentIdentifier) {
+        super(Token.NAME, value);
+        this.declaredScope = declaredScope;
+        this.parentIdentifier = parentIdentifier;
+        this.declareAsVar = false;
     }
 
     ScriptOrFnScope getDeclaredScope() {
@@ -49,6 +61,27 @@ class JavaScriptIdentifier extends JavaScriptToken {
 
     boolean declareAsVar() {
         return declareAsVar;
+    }
+
+    JavaScriptIdentifier getParent() {
+    	return parentIdentifier;
+    }
+
+    String getFullName() {
+    	StringBuilder sb = new StringBuilder();
+    	if (getParent() != null) {
+    		sb.append(getParent().getValue());
+    	}
+    	sb.append(getValue());
+    	return sb.toString();
+    }
+
+    JavaScriptIdentifier getProperty(String name) {
+    	return properties.get(name);
+    }
+
+    void addProperty(String name) {
+    	properties.put(name, new JavaScriptIdentifier(name, declaredScope, this));
     }
 
     void incrementRefcount() {
