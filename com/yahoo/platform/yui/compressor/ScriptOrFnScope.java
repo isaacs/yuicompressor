@@ -20,7 +20,6 @@ class ScriptOrFnScope {
     private Hashtable identifiers = new Hashtable();
     private Hashtable hints = new Hashtable();
     private boolean markedForMunging = true;
-    private int varcount = 0;
 
     ScriptOrFnScope(int braceNesting, ScriptOrFnScope parentScope) {
         this.braceNesting = braceNesting;
@@ -39,10 +38,10 @@ class ScriptOrFnScope {
         return parentScope;
     }
 
-    JavaScriptIdentifier declareIdentifier(String symbol) {
+    JavaScriptIdentifier declareIdentifier(String symbol, boolean declareAsVar) {
         JavaScriptIdentifier identifier = (JavaScriptIdentifier) identifiers.get(symbol);
         if (identifier == null) {
-            identifier = new JavaScriptIdentifier(symbol, this);
+            identifier = new JavaScriptIdentifier(symbol, this, declareAsVar);
             identifiers.put(symbol, identifier);
         }
         return identifier;
@@ -63,7 +62,30 @@ class ScriptOrFnScope {
             markedForMunging = false;
         }
     }
-
+    
+    /* * /
+    ArrayList getAllIdentifiers() {
+        ArrayList result = new ArrayList();
+        Enumeration elements = identifiers.elements();
+        while (elements.hasMoreElements()) {
+            result.add(elements.nextElement());
+        }
+        return result;
+    }
+    /* */
+    
+    ArrayList<JavaScriptIdentifier> getVarIdentifiers() {
+        ArrayList<JavaScriptIdentifier> result = new ArrayList<JavaScriptIdentifier>();
+        Enumeration elements = identifiers.elements();
+        while (elements.hasMoreElements()) {
+            JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
+            if (i.declareAsVar()) {
+                result.add(i);
+            }
+        }
+        return result;
+    }
+    
     private ArrayList getUsedSymbols() {
         ArrayList result = new ArrayList();
         Enumeration elements = identifiers.elements();
@@ -86,11 +108,6 @@ class ScriptOrFnScope {
             scope = scope.parentScope;
         }
         return result;
-    }
-
-    int incrementVarCount() {
-        varcount++;
-        return varcount;
     }
 
     void munge() {
