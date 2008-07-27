@@ -158,20 +158,15 @@ class ScriptOrFnScope {
                     freeSymbols.removeAll(getAllUsedSymbols());
                 }
 
-                String mungedValue;
                 JavaScriptIdentifier identifier = (JavaScriptIdentifier) elements.nextElement();
                 if (identifier.isMarkedForMunging()) {
-                    mungedValue = (String) freeSymbols.remove(0);
-                } else {
-                    mungedValue = identifier.getValue();
+                    identifier.setMungedValue((String) freeSymbols.remove(0));
                 }
-                identifier.setMungedValue(mungedValue);
             }
         }
 
         for (int i = 0; i < subScopes.size(); i++) {
-            ScriptOrFnScope scope = (ScriptOrFnScope) subScopes.get(i);
-            scope.munge();
+            ((ScriptOrFnScope) subScopes.get(i)).munge();
         }
     }
 }

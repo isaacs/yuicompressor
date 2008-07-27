@@ -1072,7 +1072,7 @@ public class JavaScriptCompressor {
 
         String symbol;
         JavaScriptToken token;
-        ScriptOrFnScope currentScope, currentVarScope;
+        ScriptOrFnScope currentScope;
         JavaScriptIdentifier identifier;
         ArrayList<ScriptOrFnScope> scopesDeclaredVars = new ArrayList<ScriptOrFnScope>();
         ArrayList<JavaScriptIdentifier> noVarDeclIdentifier = new ArrayList<JavaScriptIdentifier>();
@@ -1086,7 +1086,6 @@ public class JavaScriptCompressor {
         
         // skip global scope var declarations
         scopesDeclaredVars.add(globalScope);
-        currentVarScope = globalScope;
         
         while (offset < length) {
 
@@ -1094,8 +1093,7 @@ public class JavaScriptCompressor {
             symbol = token.getValue();
             currentScope = getCurrentScope();
             
-            if (currentVarScope != currentScope && !scopesDeclaredVars.contains(currentScope)) {
-                currentVarScope = currentScope;
+            if (!scopesDeclaredVars.contains(currentScope)) {
                 scopesDeclaredVars.add(currentScope);
                 ArrayList<JavaScriptIdentifier> declaredIdentifiers = currentScope.getVarIdentifiers();
                 
@@ -1244,15 +1242,9 @@ public class JavaScriptCompressor {
 
                 case Token.RETURN:
                     result.append("return");
-                    // No space needed after 'return' when followed
-                    // by '(', '[', '{', a string or a regexp.
                     if (offset < length) {
                         token = getToken(0);
-                        if (token.getType() != Token.LP &&
-                                token.getType() != Token.LB &&
-                                token.getType() != Token.LC &&
-                                token.getType() != Token.STRING &&
-                                token.getType() != Token.REGEXP) {
+                        if (token.getType() == Token.NAME || token.getType() == Token.THIS) {
                             result.append(' ');
                         }
                     }
