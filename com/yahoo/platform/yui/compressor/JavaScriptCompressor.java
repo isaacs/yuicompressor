@@ -34,6 +34,10 @@ public class JavaScriptCompressor {
         // see anything missing.
         builtin.add("NaN");
         builtin.add("top");
+        
+        builtin.add("document");
+        builtin.add("window");
+        builtin.add("undefined");
 
         ones = new ArrayList();
         for (char c = 'A'; c <= 'Z'; c++)
@@ -90,7 +94,7 @@ public class JavaScriptCompressor {
         literals.put(new Integer(Token.FALSE), "false");
         literals.put(new Integer(Token.NULL), "null");
         literals.put(new Integer(Token.THIS), "this");
-        literals.put(new Integer(Token.FUNCTION), "function ");
+        literals.put(new Integer(Token.FUNCTION), "function");
         literals.put(new Integer(Token.COMMA), ",");
         literals.put(new Integer(Token.LC), "{");
         literals.put(new Integer(Token.RC), "}");
@@ -111,13 +115,13 @@ public class JavaScriptCompressor {
         literals.put(new Integer(Token.TRY), "try");
         literals.put(new Integer(Token.CATCH), "catch");
         literals.put(new Integer(Token.FINALLY), "finally");
-        literals.put(new Integer(Token.THROW), "throw ");
+        literals.put(new Integer(Token.THROW), "throw");
         literals.put(new Integer(Token.SWITCH), "switch");
-        literals.put(new Integer(Token.BREAK), "break ");
-        literals.put(new Integer(Token.CONTINUE), "continue ");
-        literals.put(new Integer(Token.CASE), "case ");
+        literals.put(new Integer(Token.BREAK), "break");
+        literals.put(new Integer(Token.CONTINUE), "continue");
+        literals.put(new Integer(Token.CASE), "case");
         literals.put(new Integer(Token.DEFAULT), "default");
-        literals.put(new Integer(Token.RETURN), "return ");
+        literals.put(new Integer(Token.RETURN), "return");
         literals.put(new Integer(Token.VAR), "var ");
         literals.put(new Integer(Token.SEMI), ";");
         literals.put(new Integer(Token.ASSIGN), "=");
@@ -152,7 +156,7 @@ public class JavaScriptCompressor {
         literals.put(new Integer(Token.LSH), "<<");
         literals.put(new Integer(Token.RSH), ">>");
         literals.put(new Integer(Token.URSH), ">>>");
-        literals.put(new Integer(Token.TYPEOF), "typeof ");
+        literals.put(new Integer(Token.TYPEOF), "typeof");
         literals.put(new Integer(Token.VOID), "void ");
         literals.put(new Integer(Token.CONST), "const ");
         literals.put(new Integer(Token.NOT), "!");
@@ -727,10 +731,10 @@ public class JavaScriptCompressor {
                         if (variableType.equals("nomunge")) {
                             identifier.preventMunging();
                         } else {
-                            warn("Unsupported hint value: " + hint, true);
+                            warn("Unsupported hint value: " + variableType + " (" + hint + ")", true);
                         }
                     } else {
-                        warn("Hint refers to an unknown identifier: " + hint, true);
+                        warn("Hint refers to an unknown identifier: " + variableName + " (" + hint + ")", true);
                     }
                 }
             }
@@ -863,12 +867,15 @@ public class JavaScriptCompressor {
 
                             if (identifier == null) {
 
-                                if (symbol.length() <= 3 && !builtin.contains(symbol)) {
-                                    // Here, we found an undeclared and un-namespaced symbol that is
-                                    // 3 characters or less in length. Declare it in the global scope.
-                                    // We don't need to declare longer symbols since they won't cause
-                                    // any conflict with other munged symbols.
-                                    globalScope.declareIdentifier(symbol, false);
+                                if (!builtin.contains(symbol)) {
+                                    if (symbol.length() <= 3) {
+                                        // Here, we found an undeclared and un-namespaced symbol that is
+                                        // 3 characters or less in length. Declare it in the global scope.
+                                        // We don't need to declare longer symbols since they won't cause
+                                        // any conflict with other munged symbols.
+                                        identifier = globalScope.declareIdentifier(symbol, false);
+                                        identifier.incrementRefcount();
+                                    }
                                     warn("Found an undeclared symbol: " + symbol, true);
                                 }
 
@@ -904,6 +911,9 @@ public class JavaScriptCompressor {
 
                     // The var keyword is followed by at least one symbol name.
                     // If several symbols follow, they are comma separated.
+                    
+                    boolean inFor = offset > 2 && getToken(-3).getType() == Token.FOR;
+                    
                     for (; ;) {
                         token = consumeToken();
 
@@ -932,6 +942,17 @@ public class JavaScriptCompressor {
                             token = getToken(-1);
                             if (token.getType() == Token.SEMI) {
                                 break;
+                            }
+                            if (!inFor && token.getType() == Token.COMMA) {
+                                //int ttype = getToken(-3).getType();
+                                //if (offset >= 3 && (ttype == Token.COMMA || ttype == Token.SEMI || ttype == Token.VAR)) {
+                                //    tokens.remove(offset - 1);
+                                    //tokens.remove(offset - 1);
+                                //    length -= 1;
+                                    //offset -= 1;
+                                //} else {
+                                    tokens.set(offset-1, new JavaScriptToken(Token.SEMI, ";"));
+                                //}
                             }
                         }
                     }
@@ -1138,14 +1159,22 @@ public class JavaScriptCompressor {
                     } else {
 
                         identifier = getIdentifier(symbol, currentScope);
+                        
+                        // skip ";NAME;"
+                        if (offset > 2 && getToken(-2).getType() == Token.SEMI && getToken(0).getType() == Token.SEMI) {
+
+                            offset++;
+                            break;
+                        }
+
                         if (identifier != null) {
                             if (identifier.getMungedValue() != null) {
                                 result.append(identifier.getMungedValue());
                             } else {
                                 result.append(symbol);
                             }
-                            if (currentScope != globalScope && identifier.getRefcount() == 0) {
-                                warn("The symbol " + symbol + " is declared but is apparently never used.\nThis code can probably be written in a more compact way.", true);
+                            if (currentScope != globalScope && identifier.getRefcount() == 0 && !globalScope.hasIdentifier(symbol)) {
+                                warn("The symbol " + symbol + " is declared but is apparently never used.", true);
                             }
                         } else {
                             result.append(symbol);
@@ -1203,7 +1232,7 @@ public class JavaScriptCompressor {
                             result.append(symbol);
                         }
                         if (currentScope != globalScope && identifier.getRefcount() == 0) {
-                            warn("The symbol " + symbol + " is declared but is apparently never used.\nThis code can probably be written in a more compact way.", true);
+                            warn("The symbol " + symbol + " is declared but is apparently never used.", true);
                         }
                         token = consumeToken();
                     }
@@ -1221,6 +1250,9 @@ public class JavaScriptCompressor {
                                 result.append(identifier.getMungedValue());
                             } else {
                                 result.append(symbol);
+                            }
+                            if (identifier.getRefcount() == 0) {
+                                warn("The symbol " + symbol + " is declared but is apparently never used.", true);
                             }
                         } else if (token.getType() == Token.COMMA) {
                             result.append(',');
@@ -1241,45 +1273,38 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.RETURN:
-                    result.append("return");
+                case Token.TYPEOF:
+                    result.append(literals.get(new Integer(token.getType())));
+                    // No space needed after 'return' and 'typeof' when followed
+                    // by '(', '[', '{', a string or a regexp.
                     if (offset < length) {
                         token = getToken(0);
-                        if (token.getType() == Token.NAME || token.getType() == Token.THIS) {
+                        if (token.getType() != Token.LP &&
+                                token.getType() != Token.LB &&
+                                token.getType() != Token.LC &&
+                                token.getType() != Token.STRING &&
+                                token.getType() != Token.REGEXP &&
+                                token.getType() != Token.SEMI) {
                             result.append(' ');
                         }
                     }
                     break;
 
                 case Token.CASE:
-                    result.append("case");
-                    // White-space needed after 'case' when not followed by a string.
-                    if (offset < length && getToken(0).getType() != Token.STRING) {
-                        result.append(' ');
-                    }
-                    break;
-
                 case Token.THROW:
-                    // White-space needed after 'throw' when not followed by a string.
-                    result.append("throw");
+                    result.append(literals.get(new Integer(token.getType())));
+                    // White-space needed after 'case' and 'throw' when not followed by a string.
                     if (offset < length && getToken(0).getType() != Token.STRING) {
                         result.append(' ');
                     }
                     break;
 
                 case Token.BREAK:
-                    result.append("break");
-                    if (offset < length && getToken(0).getType() != Token.SEMI) {
-                        // If 'break' is not followed by a semi-colon, it must be
-                        // followed by a label, hence the need for a white space.
-                        result.append(' ');
-                    }
-                    break;
-
                 case Token.CONTINUE:
-                    result.append("continue");
+                    result.append(literals.get(new Integer(token.getType())));
                     if (offset < length && getToken(0).getType() != Token.SEMI) {
-                        // If 'continue' is not followed by a semi-colon, it must be
-                        // followed by a label, hence the need for a white space.
+                        // If 'break' or 'continue' is not followed by a semi-colon, it must
+                        // be followed by a label, hence the need for a white space.
                         result.append(' ');
                     }
                     break;

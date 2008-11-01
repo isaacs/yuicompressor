@@ -50,6 +50,10 @@ class ScriptOrFnScope {
     JavaScriptIdentifier getIdentifier(String symbol) {
         return (JavaScriptIdentifier) identifiers.get(symbol);
     }
+    
+    boolean hasIdentifier(String symbol) {
+        return getIdentifier(symbol) != null;
+    }
 
     void addHint(String variableName, String variableType) {
         hints.put(variableName, variableType);
