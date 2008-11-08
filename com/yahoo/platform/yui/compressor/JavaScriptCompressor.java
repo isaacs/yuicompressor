@@ -326,6 +326,7 @@ public class JavaScriptCompressor {
             switch (tt) {
 
                 case Token.SPECIALCOMMENT:
+                case Token.CSTYLECOMMENT:
                 case Token.NAME:
                 case Token.REGEXP:
                 case Token.STRING:
@@ -1325,6 +1326,7 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.SPECIALCOMMENT:
+                case Token.CSTYLECOMMENT:
                     if (result.length() > 0 && result.charAt(result.length() - 1) != '\n') {
                         result.append("\n");
                     }
