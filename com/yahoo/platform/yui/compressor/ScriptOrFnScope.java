@@ -83,7 +83,7 @@ class ScriptOrFnScope {
         Enumeration elements = identifiers.elements();
         while (elements.hasMoreElements()) {
             JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
-            if (i.declareAsVar()) {
+            if (i.declaredAsVar()) {
                 result.add(i);
             }
         }
