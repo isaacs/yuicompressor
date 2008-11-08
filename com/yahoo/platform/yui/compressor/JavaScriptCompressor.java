@@ -40,17 +40,17 @@ public class JavaScriptCompressor {
         browser.add("alert");
 
         ones = new ArrayList();
-        for (char c = 'A'; c <= 'Z'; c++)
-            ones.add(Character.toString(c));
         for (char c = 'a'; c <= 'z'; c++)
+            ones.add(Character.toString(c));
+        for (char c = 'A'; c <= 'Z'; c++)
             ones.add(Character.toString(c));
 
         twos = new ArrayList();
         for (int i = 0; i < ones.size(); i++) {
             String one = (String) ones.get(i);
-            for (char c = 'A'; c <= 'Z'; c++)
-                twos.add(one + Character.toString(c));
             for (char c = 'a'; c <= 'z'; c++)
+                twos.add(one + Character.toString(c));
+            for (char c = 'A'; c <= 'Z'; c++)
                 twos.add(one + Character.toString(c));
             for (char c = '0'; c <= '9'; c++)
                 twos.add(one + Character.toString(c));
