@@ -171,7 +171,13 @@ public class Decompiler
         addToken(Token.SPECIALCOMMENT);
         appendString(str);
     }
-
+    
+    void addCStyleComment(String str)
+    {
+        addToken(Token.CSTYLECOMMENT);
+        appendString(str);
+    }
+    
     void addNumber(double n)
     {
         addToken(Token.NUMBER);

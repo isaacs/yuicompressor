@@ -253,7 +253,9 @@ public class Token
 
         SPECIALCOMMENT = 152, // Internet Explorer conditional comment
 
-        LAST_TOKEN     = 153;
+        CSTYLECOMMENT  = 153,
+
+        LAST_TOKEN     = 154;
 
     public static String name(int token)
     {

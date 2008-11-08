@@ -727,6 +727,7 @@ class TokenStream
                                     if (s.startsWith("!")) {
                                         // Remove the leading '!'
                                         this.string = s.substring(1);
+                                        return Token.CSTYLECOMMENT;
                                     } else {
                                         this.string = s;
                                     }
