@@ -20,6 +20,8 @@ class ScriptOrFnScope {
     private Hashtable identifiers = new Hashtable();
     private Hashtable hints = new Hashtable();
     private boolean markedForMunging = true;
+    private int thisCount = 0;
+    private JavaScriptIdentifier thisIdentifier;
 
     ScriptOrFnScope(int braceNesting, ScriptOrFnScope parentScope) {
         this.braceNesting = braceNesting;
@@ -54,7 +56,16 @@ class ScriptOrFnScope {
     boolean hasIdentifier(String symbol) {
         return getIdentifier(symbol) != null;
     }
-
+    
+    void declareSymbolAsThis(String symbol) {
+        thisIdentifier = declareIdentifier(symbol, false);
+    }
+    
+    JavaScriptIdentifier getThisIdentifier()
+    {
+        return thisIdentifier;
+    }
+    
     void addHint(String variableName, String variableType) {
         hints.put(variableName, variableType);
     }
@@ -67,17 +78,6 @@ class ScriptOrFnScope {
         }
     }
     
-    /* * /
-    ArrayList getAllIdentifiers() {
-        ArrayList result = new ArrayList();
-        Enumeration elements = identifiers.elements();
-        while (elements.hasMoreElements()) {
-            result.add(elements.nextElement());
-        }
-        return result;
-    }
-    /* */
-    
     ArrayList<JavaScriptIdentifier> getVarIdentifiers() {
         ArrayList<JavaScriptIdentifier> result = new ArrayList<JavaScriptIdentifier>();
         Enumeration elements = identifiers.elements();
@@ -88,6 +88,16 @@ class ScriptOrFnScope {
             }
         }
         return result;
+    }
+    
+    int incrementThisCount()
+    {
+        return ++thisCount;
+    }
+    
+    int getThisCount()
+    {
+        return thisCount;
     }
     
     private ArrayList getUsedSymbols() {

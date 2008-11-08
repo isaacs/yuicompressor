@@ -838,6 +838,17 @@ public class JavaScriptCompressor {
                 case Token.RP:
                     parensNesting--;
                     break;
+                    
+                case Token.THIS:
+                    if (mode == BUILDING_SYMBOL_TREE) {
+                        if (offset > 2 &&
+                                getToken(-3).getType() == Token.NAME &&    // variable
+                                getToken(-2).getType() == Token.ASSIGN &&  // = this
+                                (getToken(0).getType()  == Token.SEMI || getToken(0).getType()  == Token.COMMA)) { // , or ;
+                            currentScope.declareSymbolAsThis(getToken(-3).getValue());
+                        }
+                    }
+                    break;
 
                 case Token.SPECIALCOMMENT:
                     if (mode == BUILDING_SYMBOL_TREE) {
@@ -965,6 +976,10 @@ public class JavaScriptCompressor {
                     assert braceNesting >= scope.getBraceNesting();
                     if (braceNesting == scope.getBraceNesting()) {
                         leaveCurrentScope();
+                        if (munge && mode == BUILDING_SYMBOL_TREE &&
+                                scope.getThisIdentifier() == null && scope.getThisCount() > 2) {
+                            scope.declareSymbolAsThis("this");
+                        }
                         return;
                     }
                     break;
@@ -989,6 +1004,12 @@ public class JavaScriptCompressor {
                     if (mode == BUILDING_SYMBOL_TREE) {
                         protectScopeFromObfuscation(scope);
                         warn("Using JScript conditional comments is not recommended." + (munge ? " Moreover, using JScript conditional comments reduces the level of compression." : ""), true);
+                    }
+                    break;
+
+                case Token.THIS:
+                    if (mode == BUILDING_SYMBOL_TREE) {
+                        scope.incrementThisCount();
                     }
                     break;
 
@@ -1091,6 +1112,7 @@ public class JavaScriptCompressor {
         ScriptOrFnScope currentScope;
         JavaScriptIdentifier identifier;
         ArrayList<ScriptOrFnScope> scopeDeclaredVars = new ArrayList<ScriptOrFnScope>();
+        ArrayList<ScriptOrFnScope> scopeDeclaredThis = new ArrayList<ScriptOrFnScope>();
 
         int length = tokens.size();
         StringBuffer result = new StringBuffer();
@@ -1108,6 +1130,8 @@ public class JavaScriptCompressor {
             symbol = token.getValue();
             currentScope = getCurrentScope();
             
+            // one var declaration
+            boolean declaredVars = false;
             if (!disableOptimizations && !scopeDeclaredVars.contains(currentScope)) {
                 scopeDeclaredVars.add(currentScope);
                 ArrayList<JavaScriptIdentifier> declaredIdentifiers = currentScope.getVarIdentifiers();
@@ -1126,6 +1150,22 @@ public class JavaScriptCompressor {
                         result.append(',');
                     }
                     result.setCharAt(result.length() - 1, ';');
+                    declaredVars = true;
+                }
+            }
+
+            // replace this with local var
+            if (munge &&  !scopeDeclaredThis.contains(currentScope)) {
+                scopeDeclaredThis.add(currentScope);
+                identifier = currentScope.getThisIdentifier();
+                if (identifier != null) {
+                    if (declaredVars) {
+                        result.setCharAt(result.length() - 1, ',');
+                    } else if ("this".equals(identifier.getValue()) || disableOptimizations) {
+                        result.append("var ");
+                    }
+                    result.append(identifier.getMungedValue());
+                    result.append("=this;");
                 }
             }
 
@@ -1147,6 +1187,21 @@ public class JavaScriptCompressor {
                         // skip ";NAME;"
                         if (offset > 2 && getToken(-2).getType() == Token.SEMI && getToken(0).getType() == Token.SEMI) {
                             offset++;
+                            break;
+                        }
+                        
+                        // skip "this" var alias:  ref = this;
+                        if (getToken(0).getType() == Token.ASSIGN &&
+                                getToken(1).getType() == Token.THIS &&
+                                (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.COMMA) &&
+                                currentScope.getThisIdentifier() != null &&
+                                symbol.equals(currentScope.getThisIdentifier().getValue())) {
+                            //if (getToken(2).getType() == Token.SEMI && getToken(-2).getType() == Token.VAR) {
+                                //warn("var", true);
+                                //result.delete(result.length() - 3, result.length() - 1);
+                            //}
+                            // skip this tokens
+                            offset += 3;
                             break;
                         }
 
@@ -1341,6 +1396,21 @@ public class JavaScriptCompressor {
                     if (disableOptimizations || identifier == null ||
                             identifier.getType() == Token.NAME && currentScope.getVarIdentifiers().size() == 1) {
                         result.append("var ");
+                    }
+                    break;
+                    
+                case Token.THIS:
+                    
+                    identifier = currentScope.getThisIdentifier();
+                    if (identifier != null //&&
+                            //offset > 2 &&
+                            //getToken(-2).getType() != Token.ASSIGN &&
+                            //getToken(-3).getType() != Token.NAME &&
+                            //!getToken(-3).getValue().equals(identifier.getValue())
+                            ) {
+                        result.append(identifier.getMungedValue());
+                    } else {
+                        result.append("this");
                     }
                     break;
 
