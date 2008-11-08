@@ -1172,6 +1172,9 @@ public class JavaScriptCompressor {
                     // cut of leading zero
                     if (!disableOptimizations && symbol.startsWith("0.")) {
                         result.append(symbol.substring(1));
+                    } else if (!disableOptimizations && symbol.startsWith("-0.")) {
+                        result.append('-');
+                        result.append(symbol.substring(2));
                     } else {
                         result.append(symbol);
                     }
