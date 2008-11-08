@@ -876,7 +876,6 @@ public class JavaScriptCompressor {
                                         // We don't need to declare longer symbols since they won't cause
                                         // any conflict with other munged symbols.
                                         identifier = globalScope.declareIdentifier(symbol, false);
-                                        identifier.incrementRefcount();
                                     }
                                     warn("Found an undeclared symbol: " + symbol, true);
                                 }
@@ -1020,7 +1019,6 @@ public class JavaScriptCompressor {
                                         // We don't need to declare longer symbols since they won't cause
                                         // any conflict with other munged symbols.
                                         identifier = globalScope.declareIdentifier(symbol, false);
-                                        identifier.incrementRefcount();
                                     }
                                     warn("Found an undeclared symbol: " + symbol, true);
                                 }
@@ -1312,7 +1310,8 @@ public class JavaScriptCompressor {
                     boolean newLine = linebreakpos >= 0 && result.length() - linestartpos > linebreakpos;
                     
                     // No need to output a semi-colon if the next character is a right-curly...
-                    if (!newLine && (preserveAllSemiColons || offset < length && getToken(0).getType() != Token.RC)) {
+                    if (!newLine && (preserveAllSemiColons || offset < length &&
+                            getToken(0).getType() != Token.RC && getToken(0).getType() != Token.SPECIALCOMMENT)) {
                         result.append(';');
                     }
 
@@ -1361,7 +1360,7 @@ public class JavaScriptCompressor {
         if (!preserveAllSemiColons && result.length() > 0) {
             if (result.charAt(result.length() - 1) == '\n') {
                 result.setCharAt(result.length() - 1, ';');
-            } else {
+            } else if (result.charAt(result.length() - 1) != '}') {
                 result.append(';');
             }
         }
