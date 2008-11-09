@@ -124,6 +124,11 @@ class ScriptOrFnScope {
         return result;
     }
 
+    boolean isMarkedForMunging()
+    {
+        return markedForMunging;
+    }
+    
     void munge() {
 
         if (!markedForMunging) {

@@ -977,7 +977,11 @@ public class JavaScriptCompressor {
                     if (braceNesting == scope.getBraceNesting()) {
                         leaveCurrentScope();
                         if (munge && mode == BUILDING_SYMBOL_TREE &&
-                                scope.getThisIdentifier() == null && scope.getThisCount() > 2) {
+                                scope.isMarkedForMunging() &&
+                                scope.getThisIdentifier() == null &&
+                                scope.getThisCount() > 2) {
+                            // add virtual symbol as this reference
+                            // only when scope will be munged!
                             scope.declareSymbolAsThis("this");
                         }
                         return;
@@ -1117,7 +1121,11 @@ public class JavaScriptCompressor {
         int length = tokens.size();
         StringBuffer result = new StringBuffer();
 
-        int linestartpos = 0;
+        int linestartpos = 0,
+            forLoopParensNesting = -1,
+            parensNesting = 0;
+
+        boolean inForLoop = false;
 
         enterScope(globalScope);
         
@@ -1360,14 +1368,31 @@ public class JavaScriptCompressor {
                         leaveCurrentScope();
                     }
                     break;
-
+                    
+                case Token.LP:
+                    result.append('(');
+                    parensNesting++;
+                    break;
+                    
+                case Token.RP:
+                    result.append(')');
+                    parensNesting--;
+                    if (parensNesting == forLoopParensNesting) {
+                        inForLoop = false;
+                    }
+                    break;
+                    
                 case Token.SEMI:
                     
-                    boolean newLine = linebreakpos >= 0 && result.length() - linestartpos > linebreakpos;
+                    boolean newLine = !inForLoop && linebreakpos >= 0 && result.length() - linestartpos > linebreakpos;
                     
-                    // No need to output a semi-colon if the next character is a right-curly...
-                    if (!newLine && (preserveAllSemiColons || offset < length &&
-                            getToken(0).getType() != Token.RC && getToken(0).getType() != Token.SPECIALCOMMENT)) {
+                    // No need to output a semi-colon on new line or the next character is a right-curly or special/c-style comment...
+                    if (preserveAllSemiColons ||
+                            (!newLine &&
+                                offset < length &&
+                                getToken(0).getType() != Token.RC &&
+                                getToken(0).getType() != Token.SPECIALCOMMENT &&
+                                getToken(0).getType() != Token.CSTYLECOMMENT)) {
                         result.append(';');
                     }
 
@@ -1402,16 +1427,17 @@ public class JavaScriptCompressor {
                 case Token.THIS:
                     
                     identifier = currentScope.getThisIdentifier();
-                    if (identifier != null //&&
-                            //offset > 2 &&
-                            //getToken(-2).getType() != Token.ASSIGN &&
-                            //getToken(-3).getType() != Token.NAME &&
-                            //!getToken(-3).getValue().equals(identifier.getValue())
-                            ) {
+                    if (identifier != null) {
                         result.append(identifier.getMungedValue());
                     } else {
                         result.append("this");
                     }
+                    break;
+                    
+                case Token.FOR:
+                    result.append("for");
+                    forLoopParensNesting = parensNesting;
+                    inForLoop = true;
                     break;
 
                 default:
