@@ -90,6 +90,19 @@ class ScriptOrFnScope {
         return result;
     }
     
+    int getVarIdentifiersSize()
+    {
+        int size = 0;
+        Enumeration elements = identifiers.elements();
+        while (elements.hasMoreElements()) {
+            JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
+            if (i.declaredAsVar()) {
+                size++;
+            }
+        }
+        return size;
+    }
+    
     int incrementThisCount()
     {
         return ++thisCount;

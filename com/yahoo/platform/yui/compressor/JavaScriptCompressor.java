@@ -21,23 +21,97 @@ public class JavaScriptCompressor {
     static final ArrayList twos;
     static final ArrayList threes;
 
-    static final Set builtin = new HashSet();
+    static final Set global = new HashSet();
     static final Set browser = new HashSet();
     static final Map literals = new Hashtable();
     static final Set reserved = new HashSet();
 
     static {
 
-        // This list contains all the 3 characters or less built-in global
-        // symbols available in a browser. Please add to this list if you
-        // see anything missing.
-        builtin.add("NaN");
-        builtin.add("top");
+        // This list contains all the built-in global symbols available in a browser.
+        // Please add to this list if you see anything missing.
+        global.add("NaN");
+        global.add("top");
+        global.add("Array");
+        global.add("Boolean");
+        global.add("Date");
+        global.add("decodeURI");
+        global.add("decodeURIComponent");
+        global.add("encodeURI");
+        global.add("encodeURIComponent");
+        global.add("Error");
+        global.add("eval");
+        global.add("EvalError");
+        global.add("Function");
+        global.add("isFinite");
+        global.add("isNaN");
+        global.add("JSON");
+        global.add("Math");
+        global.add("Number");
+        global.add("Object");
+        global.add("parseInt");
+        global.add("parseFloat");
+        global.add("RangeError");
+        global.add("ReferenceError");
+        global.add("RegExp");
+        global.add("String");
+        global.add("SyntaxError");
+        global.add("TypeError");
+        global.add("URIError");
         
         browser.add("document");
         browser.add("window");
         browser.add("undefined");
         browser.add("alert");
+        browser.add("alert");
+        browser.add("blur");
+        browser.add("clearInterval");
+        browser.add("clearTimeout");
+        browser.add("close");
+        browser.add("closed");
+        browser.add("confirm");
+        browser.add("console");
+        browser.add("Debug");
+        browser.add("defaultStatus");
+        browser.add("document");
+        browser.add("event");
+        browser.add("focus");
+        browser.add("frames");
+        browser.add("getComputedStyle");
+        browser.add("history");
+        browser.add("Image");
+        browser.add("length");
+        browser.add("location");
+        browser.add("moveBy");
+        browser.add("moveTo");
+        browser.add("name");
+        browser.add("navigator");
+        browser.add("onblur");
+        browser.add("onerror");
+        browser.add("onfocus");
+        browser.add("onload");
+        browser.add("onresize");
+        browser.add("onunload");
+        browser.add("open");
+        browser.add("opener");
+        browser.add("opera");
+        browser.add("Option");
+        browser.add("parent");
+        browser.add("print");
+        browser.add("prompt");
+        browser.add("resizeBy");
+        browser.add("resizeTo");
+        browser.add("screen");
+        browser.add("scroll");
+        browser.add("scrollBy");
+        browser.add("scrollTo");
+        browser.add("self");
+        browser.add("setInterval");
+        browser.add("setTimeout");
+        browser.add("status");
+        browser.add("top");
+        browser.add("window");
+        browser.add("XMLHttpRequest");
 
         ones = new ArrayList();
         for (char c = 'a'; c <= 'z'; c++)
@@ -62,7 +136,7 @@ public class JavaScriptCompressor {
         twos.remove("do");
         twos.remove("if");
         twos.remove("in");
-        twos.removeAll(builtin);
+        twos.removeAll(global);
 
         threes = new ArrayList();
         for (int i = 0; i < twos.size(); i++) {
@@ -82,7 +156,7 @@ public class JavaScriptCompressor {
         threes.remove("try");
         threes.remove("use");
         threes.remove("var");
-        threes.removeAll(builtin);
+        threes.removeAll(global);
 
         // That's up to ((26+26)*(1+(26+26+10)))*(1+(26+26+10))-8
         // (206,380 symbols per scope)
@@ -881,7 +955,7 @@ public class JavaScriptCompressor {
 
                             if (identifier == null) {
 
-                                if (!builtin.contains(symbol) && !browser.contains(symbol)) {
+                                if (!global.contains(symbol) && !browser.contains(symbol)) {
                                     if (symbol.length() <= 3) {
                                         // Here, we found an undeclared and un-namespaced symbol that is
                                         // 3 characters or less in length. Declare it in the global scope.
@@ -889,7 +963,9 @@ public class JavaScriptCompressor {
                                         // any conflict with other munged symbols.
                                         identifier = globalScope.declareIdentifier(symbol, false);
                                     }
-                                    warn("Found an undeclared symbol: " + symbol, true);
+                                    if (currentScope != globalScope) {
+                                        warn("Found an undeclared symbol: " + symbol, true);
+                                    }
                                 }
 
                             } else {
@@ -1038,7 +1114,7 @@ public class JavaScriptCompressor {
 
                             if (identifier == null) {
 
-                                if (!builtin.contains(symbol) && !browser.contains(symbol)) {
+                                if (!global.contains(symbol) && !browser.contains(symbol)) {
                                     if (symbol.length() <= 3) {
                                         // Here, we found an undeclared and un-namespaced symbol that is
                                         // 3 characters or less in length. Declare it in the global scope.
@@ -1046,7 +1122,9 @@ public class JavaScriptCompressor {
                                         // any conflict with other munged symbols.
                                         identifier = globalScope.declareIdentifier(symbol, false);
                                     }
-                                    warn("Found an undeclared symbol: " + symbol, true);
+                                    if (scope != globalScope) {
+                                        warn("Found an undeclared symbol: " + symbol, true);
+                                    }
                                 }
 
                             } else {
@@ -1115,8 +1193,7 @@ public class JavaScriptCompressor {
         JavaScriptToken token;
         ScriptOrFnScope currentScope;
         JavaScriptIdentifier identifier;
-        ArrayList<ScriptOrFnScope> scopeDeclaredVars = new ArrayList<ScriptOrFnScope>();
-        ArrayList<ScriptOrFnScope> scopeDeclaredThis = new ArrayList<ScriptOrFnScope>();
+        ArrayList<ScriptOrFnScope> processedScopes = new ArrayList<ScriptOrFnScope>();
 
         int length = tokens.size();
         StringBuffer result = new StringBuffer();
@@ -1129,8 +1206,8 @@ public class JavaScriptCompressor {
 
         enterScope(globalScope);
         
-        // skip global scope var declarations
-        scopeDeclaredVars.add(globalScope);
+        // skip global scope processing
+        processedScopes.add(globalScope);
         
         while (offset < length) {
 
@@ -1139,10 +1216,12 @@ public class JavaScriptCompressor {
             currentScope = getCurrentScope();
             
             // one var declaration
-            boolean declaredVars = false;
-            if (!disableOptimizations && !scopeDeclaredVars.contains(currentScope)) {
-                scopeDeclaredVars.add(currentScope);
+            
+            if (!disableOptimizations && !processedScopes.contains(currentScope)) {
+                processedScopes.add(currentScope);
                 ArrayList<JavaScriptIdentifier> declaredIdentifiers = currentScope.getVarIdentifiers();
+                
+                boolean declaredVars = false;
                 
                 int len = declaredIdentifiers.size();
                 if (len > 1) {
@@ -1160,20 +1239,23 @@ public class JavaScriptCompressor {
                     result.setCharAt(result.length() - 1, ';');
                     declaredVars = true;
                 }
-            }
-
-            // replace this with local var
-            if (munge &&  !scopeDeclaredThis.contains(currentScope)) {
-                scopeDeclaredThis.add(currentScope);
-                identifier = currentScope.getThisIdentifier();
-                if (identifier != null) {
-                    if (declaredVars) {
-                        result.setCharAt(result.length() - 1, ',');
-                    } else if ("this".equals(identifier.getValue()) || disableOptimizations) {
-                        result.append("var ");
+                
+                // replace this with local var
+                if (munge) {
+                    identifier = currentScope.getThisIdentifier();
+                    if (identifier != null) {
+                        if ("this".equals(identifier.getValue())) {
+                            if (declaredVars) {
+                                result.setCharAt(result.length() - 1, ',');
+                            } else  {
+                                result.append("var ");
+                            }
+                        } else if (!declaredVars) {
+                            result.append("var ");
+                        }
+                        result.append(identifier.getMungedValue());
+                        result.append("=this;");
                     }
-                    result.append(identifier.getMungedValue());
-                    result.append("=this;");
                 }
             }
 
@@ -1192,8 +1274,11 @@ public class JavaScriptCompressor {
                         if (identifier != null && currentScope != globalScope && identifier.getRefcount() == 0 && !globalScope.hasIdentifier(symbol)) {
                             warn("The symbol " + symbol + " is declared but is apparently never used.", true);
                         }
+                        
                         // skip ";NAME;"
-                        if (offset > 2 && getToken(-2).getType() == Token.SEMI && getToken(0).getType() == Token.SEMI) {
+                        if (offset > 2 && 
+                                (getToken(-2).getType() == Token.SEMI || (getToken(-2).getType() == Token.VAR && currentScope.getVarIdentifiersSize() != 1)) &&
+                                 getToken(0) .getType() == Token.SEMI) {
                             offset++;
                             break;
                         }
@@ -1204,10 +1289,6 @@ public class JavaScriptCompressor {
                                 (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.COMMA) &&
                                 currentScope.getThisIdentifier() != null &&
                                 symbol.equals(currentScope.getThisIdentifier().getValue())) {
-                            //if (getToken(2).getType() == Token.SEMI && getToken(-2).getType() == Token.VAR) {
-                                //warn("var", true);
-                                //result.delete(result.length() - 3, result.length() - 1);
-                            //}
                             // skip this tokens
                             offset += 3;
                             break;
@@ -1419,7 +1500,9 @@ public class JavaScriptCompressor {
                     token = getToken(0);
                     identifier = currentScope.getIdentifier(token.getValue());
                     if (disableOptimizations || identifier == null ||
-                            identifier.getType() == Token.NAME && currentScope.getVarIdentifiers().size() == 1) {
+                            identifier.getType() == Token.NAME &&
+                            currentScope.getVarIdentifiersSize() == 1 &&
+                            identifier != currentScope.getThisIdentifier()) {
                         result.append("var ");
                     }
                     break;
