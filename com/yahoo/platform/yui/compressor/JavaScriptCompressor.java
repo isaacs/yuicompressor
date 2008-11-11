@@ -1251,6 +1251,16 @@ public class JavaScriptCompressor {
         // skip global scope processing
         processedScopes.add(globalScope);
         
+        ArrayList<JavaScriptIdentifier> globalIdentifiers = globalScope.getVarIdentifiers();
+        result.append("/*global ");
+        for (int i = 0; i<globalIdentifiers.size(); i++) {
+            identifier = globalIdentifiers.get(i);
+            result.append(identifier.getValue());
+            result.append(',');
+        }
+        result.setCharAt(result.length() - 1, ' ');
+        result.append("*/\n");
+        
         while (offset < length) {
 
             currentScope = getCurrentScope();
