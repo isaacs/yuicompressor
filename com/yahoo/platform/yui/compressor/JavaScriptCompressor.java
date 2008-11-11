@@ -937,10 +937,7 @@ public class JavaScriptCompressor {
                     if (mode == BUILDING_SYMBOL_TREE) {
 
                         if (symbol.equals("eval")) {
-
-                            protectScopeFromObfuscation(currentScope);
-                            warn("Using 'eval' is not recommended." + (munge ? " Moreover, using 'eval' reduces the level of compression!" : ""), true);
-
+                            checkEvalStatement();
                         }
 
                     } else if (mode == CHECKING_SYMBOL_TREE) {
@@ -975,6 +972,54 @@ public class JavaScriptCompressor {
                     }
                     break;
             }
+        }
+    }
+
+    private void checkEvalStatement()
+    {
+        JavaScriptToken token;
+        ScriptOrFnScope scope = getCurrentScope();
+
+        // if eval has a hint
+        // hint has a format of: "someVar:use,x:create"
+        if (offset > 3 &&
+                (token = getToken(-3)).getType() == Token.STRING &&
+                getToken(-2).getType() == Token.SEMI) {
+
+            JavaScriptIdentifier identifier;
+            String hints = token.getValue();
+            // Remove the leading and trailing quotes...
+            hints = hints.substring(1, hints.length() - 1).trim();
+            StringTokenizer st = new StringTokenizer(hints, ",");
+            while (st.hasMoreTokens()) {
+                String hint = st.nextToken();
+                int idx = hint.indexOf(':');
+                if (idx <= 0 || idx >= hint.length() - 1) {
+                    warn("Invalid hint syntax: " + hint, true);
+                    break;
+                }
+                String variableName = hint.substring(0, idx).trim();
+                String variableType = hint.substring(idx + 1).trim();
+                if (variableType.equals("use")) {
+                    identifier = getIdentifier(variableName, scope);
+                    if (identifier != null) {
+                        identifier.preventMunging();
+                    } else {
+                        warn("Hint refers to an unknown identifier: " + variableName + " (" + hint + ")", true);
+                    }
+                } else if (variableType.equals("create")) {
+                    // declare local identifier and prevent its munging
+                    scope.declareIdentifier(variableName, false).preventMunging();
+                } else {
+                    warn("Unsupported hint value: " + variableType + " (" + hint + ")", true);
+                }
+            }
+            // remove hint tokens
+            tokens.set(offset-2, new JavaScriptToken(Token.EMPTY, ""));
+            tokens.set(offset-3, new JavaScriptToken(Token.EMPTY, ""));
+        } else {
+            protectScopeFromObfuscation(scope);
+            warn("Using 'eval' is not recommended." + (munge ? " Moreover, using 'eval' reduces the level of compression!" : ""), true);
         }
     }
 
@@ -1099,10 +1144,7 @@ public class JavaScriptCompressor {
                     if (mode == BUILDING_SYMBOL_TREE) {
 
                         if (symbol.equals("eval")) {
-
-                            protectScopeFromObfuscation(scope);
-                            warn("Using 'eval' is not recommended." + (munge ? " Moreover, using 'eval' reduces the level of compression!" : ""), true);
-
+                            checkEvalStatement();
                         }
 
                     } else if (mode == CHECKING_SYMBOL_TREE) {
@@ -1225,7 +1267,7 @@ public class JavaScriptCompressor {
                     for (int i = 0; i<len; i++) {
                         identifier = (JavaScriptIdentifier) declaredIdentifiers.get(i);
                         symbol = identifier.getValue();
-                        if (identifier.getRefcount() == 0 && !globalScope.hasIdentifier(symbol)) {
+                        if (identifier.getRefcount() == 0) {
                             /*int oldOffset = offset;
                             do {
                                 offset++;
@@ -1525,6 +1567,10 @@ public class JavaScriptCompressor {
                     result.append("for");
                     forLoopParensNesting = parensNesting;
                     inForLoop = true;
+                    break;
+                    
+                // empty token is just empty :)
+                case Token.EMPTY:
                     break;
 
                 default:
