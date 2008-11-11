@@ -982,10 +982,11 @@ public class JavaScriptCompressor {
 
         // if eval has a hint
         // hint has a format of: "someVar:use,x:create"
-        if (offset > 3 &&
-                (token = getToken(-3)).getType() == Token.STRING &&
-                getToken(-2).getType() == Token.SEMI) {
-
+        if ((offset > 3 && (token = getToken(-3)).getType() == Token.STRING && getToken(-2).getType() == Token.SEMI) ||
+                (getToken(-2).getType() == Token.ASSIGN &&
+                        getToken(-3).getType() == Token.NAME &&
+                        getToken(-4).getType() == Token.SEMI &&
+                        (token = getToken(-5)).getType() == Token.STRING)) {
             JavaScriptIdentifier identifier;
             String hints = token.getValue();
             // Remove the leading and trailing quotes...
