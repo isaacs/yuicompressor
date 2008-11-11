@@ -1293,17 +1293,6 @@ public class JavaScriptCompressor {
                             break;
                         }
                         
-                        // skip "this" var alias:  ref = this;
-                        /*if (thisAsVar && getToken(0).getType() == Token.ASSIGN &&
-                                getToken(1).getType() == Token.THIS &&
-                                (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.COMMA) &&
-                                currentScope.getThisIdentifier() != null &&
-                                symbol.equals(currentScope.getThisIdentifier().getValue())) {
-                            // skip this tokens
-                            //offset += 3;
-                            //break;
-                        }*/
-
                         if (identifier != null) {
                             if (identifier.getMungedValue() != null) {
                                 result.append(identifier.getMungedValue());
