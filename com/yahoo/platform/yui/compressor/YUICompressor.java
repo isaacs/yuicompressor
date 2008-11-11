@@ -23,6 +23,7 @@ public class YUICompressor {
         CmdLineParser.Option typeOpt = parser.addStringOption("type");
         CmdLineParser.Option verboseOpt = parser.addBooleanOption('v', "verbose");
         CmdLineParser.Option nomungeOpt = parser.addBooleanOption("nomunge");
+        CmdLineParser.Option thisAsVarOpt = parser.addBooleanOption("this-var");
         CmdLineParser.Option linebreakOpt = parser.addStringOption("line-break");
         CmdLineParser.Option preserveSemiOpt = parser.addBooleanOption("preserve-semi");
         CmdLineParser.Option disableOptimizationsOpt = parser.addBooleanOption("disable-optimizations");
@@ -138,7 +139,8 @@ public class YUICompressor {
 
                     // Close the input stream first, and then open the output stream,
                     // in case the output file should override the input file.
-                    in.close(); in = null;
+                    in.close();
+                    in = null;
 
                     if (outputFilename == null) {
                         out = new OutputStreamWriter(System.out, charset);
@@ -147,10 +149,11 @@ public class YUICompressor {
                     }
 
                     boolean munge = parser.getOptionValue(nomungeOpt) == null;
+                    boolean thisAsVar = parser.getOptionValue(thisAsVarOpt) == null;
                     boolean preserveAllSemiColons = parser.getOptionValue(preserveSemiOpt) != null;
                     boolean disableOptimizations = parser.getOptionValue(disableOptimizationsOpt) != null;
 
-                    compressor.compress(out, linebreakpos, munge, verbose,
+                    compressor.compress(out, linebreakpos, munge, thisAsVar, verbose,
                             preserveAllSemiColons, disableOptimizations);
 
                 } catch (EvaluatorException e) {
