@@ -9,9 +9,13 @@
 package com.yahoo.platform.yui.compressor;
 
 import org.mozilla.javascript.*;
-import java.io.*;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.*;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JavaScriptCompressor {
 
@@ -19,97 +23,17 @@ public class JavaScriptCompressor {
     static final ArrayList twos;
     static final ArrayList threes;
 
-    static final Set global = new HashSet();
-    static final Set browser = new HashSet();
+    static final Set builtin = new HashSet();
     static final Map literals = new Hashtable();
     static final Set reserved = new HashSet();
 
     static {
 
-        // This list contains all the built-in global symbols available in a browser.
-        // Please add to this list if you see anything missing.
-        global.add("NaN");
-        global.add("top");
-        global.add("Array");
-        global.add("Boolean");
-        global.add("Date");
-        global.add("decodeURI");
-        global.add("decodeURIComponent");
-        global.add("encodeURI");
-        global.add("encodeURIComponent");
-        global.add("Error");
-        global.add("eval");
-        global.add("EvalError");
-        global.add("Function");
-        global.add("isFinite");
-        global.add("isNaN");
-        global.add("JSON");
-        global.add("Math");
-        global.add("Number");
-        global.add("Object");
-        global.add("parseInt");
-        global.add("parseFloat");
-        global.add("RangeError");
-        global.add("ReferenceError");
-        global.add("RegExp");
-        global.add("String");
-        global.add("SyntaxError");
-        global.add("TypeError");
-        global.add("URIError");
-        
-        browser.add("document");
-        browser.add("window");
-        browser.add("undefined");
-        browser.add("alert");
-        browser.add("alert");
-        browser.add("blur");
-        browser.add("clearInterval");
-        browser.add("clearTimeout");
-        browser.add("close");
-        browser.add("closed");
-        browser.add("confirm");
-        browser.add("console");
-        browser.add("Debug");
-        browser.add("defaultStatus");
-        browser.add("document");
-        browser.add("event");
-        browser.add("focus");
-        browser.add("frames");
-        browser.add("getComputedStyle");
-        browser.add("history");
-        browser.add("Image");
-        browser.add("length");
-        browser.add("location");
-        browser.add("moveBy");
-        browser.add("moveTo");
-        browser.add("name");
-        browser.add("navigator");
-        browser.add("onblur");
-        browser.add("onerror");
-        browser.add("onfocus");
-        browser.add("onload");
-        browser.add("onresize");
-        browser.add("onunload");
-        browser.add("open");
-        browser.add("opener");
-        browser.add("opera");
-        browser.add("Option");
-        browser.add("parent");
-        browser.add("print");
-        browser.add("prompt");
-        browser.add("resizeBy");
-        browser.add("resizeTo");
-        browser.add("screen");
-        browser.add("scroll");
-        browser.add("scrollBy");
-        browser.add("scrollTo");
-        browser.add("self");
-        browser.add("setInterval");
-        browser.add("setTimeout");
-        browser.add("status");
-        browser.add("top");
-        browser.add("window");
-        browser.add("XMLHttpRequest");
+        // This list contains all the 3 characters or less built-in global
+        // symbols available in a browser. Please add to this list if you
+        // see anything missing.
+        builtin.add("NaN");
+        builtin.add("top");
 
         ones = new ArrayList();
         for (char c = 'a'; c <= 'z'; c++)
@@ -134,7 +58,7 @@ public class JavaScriptCompressor {
         twos.remove("do");
         twos.remove("if");
         twos.remove("in");
-        twos.removeAll(global);
+        twos.removeAll(builtin);
 
         threes = new ArrayList();
         for (int i = 0; i < twos.size(); i++) {
@@ -154,7 +78,7 @@ public class JavaScriptCompressor {
         threes.remove("try");
         threes.remove("use");
         threes.remove("var");
-        threes.removeAll(global);
+        threes.removeAll(builtin);
 
         // That's up to ((26+26)*(1+(26+26+10)))*(1+(26+26+10))-8
         // (206,380 symbols per scope)
@@ -915,13 +839,12 @@ public class JavaScriptCompressor {
                     break;
                     
                 case Token.THIS:
-                    if (mode == BUILDING_SYMBOL_TREE) {
-                        if (offset > 2 &&
-                                getToken(-3).getType() == Token.NAME &&    // variable
-                                getToken(-2).getType() == Token.ASSIGN &&  // = this
-                                (getToken(0).getType()  == Token.SEMI || getToken(0).getType()  == Token.COMMA)) { // , or ;
-                            currentScope.declareSymbolAsThis(getToken(-3).getValue());
-                        }
+                    if (mode == BUILDING_SYMBOL_TREE &&
+                            offset > 2 &&
+                            getToken(-3).getType() == Token.NAME &&    // variable
+                            getToken(-2).getType() == Token.ASSIGN &&  // = this
+                            (getToken(0).getType()  == Token.SEMI || getToken(0).getType()  == Token.COMMA)) { // , or ;
+                        currentScope.declareSymbolAsThis(getToken(-3).getValue());
                     }
                     break;
 
@@ -953,7 +876,7 @@ public class JavaScriptCompressor {
 
                             if (identifier == null) {
 
-                                if (!global.contains(symbol) && !browser.contains(symbol)) {
+                                if (!builtin.contains(symbol)) {
                                     if (symbol.length() <= 3) {
                                         // Here, we found an undeclared and un-namespaced symbol that is
                                         // 3 characters or less in length. Declare it in the global scope.
@@ -1176,17 +1099,13 @@ public class JavaScriptCompressor {
 
                             if (identifier == null) {
 
-                                if (!global.contains(symbol) && !browser.contains(symbol)) {
-                                    if (symbol.length() <= 3) {
-                                        // Here, we found an undeclared and un-namespaced symbol that is
-                                        // 3 characters or less in length. Declare it in the global scope.
-                                        // We don't need to declare longer symbols since they won't cause
-                                        // any conflict with other munged symbols.
-                                        identifier = globalScope.declareIdentifier(symbol, false);
-                                    }
-                                    if (scope != globalScope) {
-                                        warn("Found an undeclared symbol: " + symbol, true);
-                                    }
+                                if (symbol.length() <= 3 && !builtin.contains(symbol)) {
+                                    // Here, we found an undeclared and un-namespaced symbol that is
+                                    // 3 characters or less in length. Declare it in the global scope.
+                                    // We don't need to declare longer symbols since they won't cause
+                                    // any conflict with other munged symbols.
+                                    globalScope.declareIdentifier(symbol, false);
+                                    warn("Found an undeclared symbol: " + symbol, true);
                                 }
 
                             } else {
@@ -1370,6 +1289,9 @@ public class JavaScriptCompressor {
                                 result.append(identifier.getMungedValue());
                             } else {
                                 result.append(symbol);
+                            }
+                            if (currentScope != globalScope && identifier.getRefcount() == 0) {
+                                warn("The symbol " + symbol + " is declared but is apparently never used.\nThis code can probably be written in a more compact way.", true);
                             }
                         } else {
                             result.append(symbol);
@@ -1599,7 +1521,7 @@ public class JavaScriptCompressor {
                     inForLoop = true;
                     break;
                     
-                // empty token is just empty :)
+                // do nothing with empty token
                 case Token.EMPTY:
                     break;
 

@@ -190,10 +190,14 @@ class ScriptOrFnScope {
                     freeSymbols.removeAll(getAllUsedSymbols());
                 }
 
+                String mungedValue;
                 JavaScriptIdentifier identifier = (JavaScriptIdentifier) elements.nextElement();
                 if (identifier.isMarkedForMunging()) {
-                    identifier.setMungedValue((String) freeSymbols.remove(0));
+                    mungedValue = (String) freeSymbols.remove(0);
+                } else {
+                    mungedValue = identifier.getValue();
                 }
+                identifier.setMungedValue(mungedValue);
             }
         }
 
