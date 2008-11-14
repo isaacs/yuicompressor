@@ -397,8 +397,8 @@ public class JavaScriptCompressor {
             int tt = source.charAt(offset++);
             switch (tt) {
 
-                case Token.SPECIALCOMMENT:
-                case Token.CSTYLECOMMENT:
+                case Token.CONDCOMMENT:
+                case Token.KEEPCOMMENT:
                 case Token.NAME:
                 case Token.REGEXP:
                 case Token.STRING:
@@ -924,7 +924,7 @@ public class JavaScriptCompressor {
                     }
                     break;
 
-                case Token.SPECIALCOMMENT:
+                case Token.CONDCOMMENT:
                     if (mode == BUILDING_SYMBOL_TREE) {
                         protectScopeFromObfuscation(currentScope);
                         warn("Using JScript conditional comments is not recommended." + (munge ? " Moreover, using JScript conditional comments reduces the level of compression!" : ""), true);
@@ -981,14 +981,27 @@ public class JavaScriptCompressor {
         ScriptOrFnScope scope = getCurrentScope();
 
         // if eval has a hint
-        // hint has a format of: "someVar:use,x:create"
-        if ((offset > 3 && (token = getToken(-3)).getType() == Token.STRING && getToken(-2).getType() == Token.SEMI) ||
-                (getToken(-2).getType() == Token.ASSIGN &&
-                        getToken(-3).getType() == Token.NAME &&
-                        getToken(-4).getType() == Token.SEMI &&
-                        (token = getToken(-5)).getType() == Token.STRING)) {
+        // hint has a following format: "someVar:use,x:create"
+        // hint can be before eval in following cases:
+        // evalNoAssign = { or ;"hint";    eval("code)";
+        // { or ;"hint";x = eval("code");
+        boolean evalNoAssign = (offset > 4 &&
+                (getToken(-4).getType() == Token.SEMI || getToken(-4).getType() == Token.LC) &&
+                getToken(-3).getType() == Token.STRING && getToken(-2).getType() == Token.SEMI);
+        if (evalNoAssign ||
+            (offset > 6 &&
+                (getToken(-6).getType() == Token.SEMI || getToken(-6).getType() == Token.LC) &&
+                getToken(-2).getType() == Token.ASSIGN &&
+                getToken(-3).getType() == Token.NAME &&
+                getToken(-4).getType() == Token.SEMI &&
+                getToken(-5).getType() == Token.STRING)) {
             JavaScriptIdentifier identifier;
-            String hints = token.getValue();
+            String hints;
+            if (evalNoAssign) {
+                hints = getToken(-3).getValue();
+            } else {
+                hints = getToken(-5).getValue();
+            }
             // Remove the leading and trailing quotes...
             hints = hints.substring(1, hints.length() - 1).trim();
             StringTokenizer st = new StringTokenizer(hints, ",");
@@ -1001,23 +1014,24 @@ public class JavaScriptCompressor {
                 }
                 String variableName = hint.substring(0, idx).trim();
                 String variableType = hint.substring(idx + 1).trim();
-                if (variableType.equals("use")) {
+                if ("use".equals(variableType)) {
                     identifier = getIdentifier(variableName, scope);
                     if (identifier != null) {
                         identifier.preventMunging();
                     } else {
                         warn("Hint refers to an unknown identifier: " + variableName + " (" + hint + ")", true);
                     }
-                } else if (variableType.equals("create")) {
+                } else if ("create".equals(variableType)) {
                     // declare local identifier and prevent its munging
-                    scope.declareIdentifier(variableName, false).preventMunging();
+                    scope.declareIdentifier(variableName, true).preventMunging();
                 } else {
                     warn("Unsupported hint value: " + variableType + " (" + hint + ")", true);
                 }
             }
             // remove hint tokens
-            tokens.set(offset-2, new JavaScriptToken(Token.EMPTY, ""));
-            tokens.set(offset-3, new JavaScriptToken(Token.EMPTY, ""));
+            tokens.set(offset - (evalNoAssign ? 2 : 4), new JavaScriptToken(Token.EMPTY, ""));
+            tokens.set(offset - (evalNoAssign ? 3 : 5), new JavaScriptToken(Token.EMPTY, ""));
+            warn("Using 'eval' is not recommended.", true);
         } else {
             protectScopeFromObfuscation(scope);
             warn("Using 'eval' is not recommended." + (munge ? " Moreover, using 'eval' reduces the level of compression!" : ""), true);
@@ -1126,7 +1140,7 @@ public class JavaScriptCompressor {
                     parseCatch();
                     break;
 
-                case Token.SPECIALCOMMENT:
+                case Token.CONDCOMMENT:
                     if (mode == BUILDING_SYMBOL_TREE) {
                         protectScopeFromObfuscation(scope);
                         warn("Using JScript conditional comments is not recommended." + (munge ? " Moreover, using JScript conditional comments reduces the level of compression." : ""), true);
@@ -1252,15 +1266,15 @@ public class JavaScriptCompressor {
         // skip global scope processing
         processedScopes.add(globalScope);
         
-        ArrayList<JavaScriptIdentifier> globalIdentifiers = globalScope.getVarIdentifiers();
-        result.append("/*global ");
-        for (int i = 0; i<globalIdentifiers.size(); i++) {
-            identifier = globalIdentifiers.get(i);
-            result.append(identifier.getValue());
-            result.append(',');
-        }
-        result.setCharAt(result.length() - 1, ' ');
-        result.append("*/\n");
+//        ArrayList<JavaScriptIdentifier> globalIdentifiers = globalScope.getVarIdentifiers();
+//        result.append("/*global ");
+//        for (int i = 0; i<globalIdentifiers.size(); i++) {
+//            identifier = globalIdentifiers.get(i);
+//            result.append(identifier.getValue());
+//            result.append(',');
+//        }
+//        result.setCharAt(result.length() - 1, ' ');
+//        result.append("*/\n");
         
         while (offset < length) {
 
@@ -1380,19 +1394,19 @@ public class JavaScriptCompressor {
                     result.append((String) literals.get(new Integer(token.getType())));
                     if (offset < length) {
                         token = getToken(0);
-                        if (token.getType() == Token.INC ||
+                        // Handle the case x +/- ++/-- y
+                        // We must keep a white space here. Otherwise, x +++ y would be
+                        // interpreted as x ++ + y by the compiler, which is a bug (due
+                        // to the implicit assignment being done on the wrong variable)
+                        if ((token.getType() == Token.INC ||
                                 token.getType() == Token.DEC ||
                                 token.getType() == Token.ADD ||
-                                token.getType() == Token.DEC) {
-                            // Handle the case x +/- ++/-- y
-                            // We must keep a white space here. Otherwise, x +++ y would be
-                            // interpreted as x ++ + y by the compiler, which is a bug (due
-                            // to the implicit assignment being done on the wrong variable)
-                            result.append(' ');
-                        } else if (token.getType() == Token.POS && getToken(-1).getType() == Token.ADD ||
-                                token.getType() == Token.NEG && getToken(-1).getType() == Token.SUB) {
-                            // Handle the case x + + y and x - - y
-                            result.append(' ');
+                                token.getType() == Token.DEC) ||
+                                
+                                // Handle the case x + + y and x - - y
+                                (token.getType() == Token.POS && getToken(-1).getType() == Token.ADD ||
+                                 token.getType() == Token.NEG && getToken(-1).getType() == Token.SUB)) {
+                                result.append(' ');
                         }
                     }
                     break;
@@ -1524,8 +1538,8 @@ public class JavaScriptCompressor {
                             (!newLine &&
                                 offset < length &&
                                 getToken(0).getType() != Token.RC &&
-                                getToken(0).getType() != Token.SPECIALCOMMENT &&
-                                getToken(0).getType() != Token.CSTYLECOMMENT)) {
+                                getToken(0).getType() != Token.CONDCOMMENT &&
+                                getToken(0).getType() != Token.KEEPCOMMENT)) {
                         result.append(';');
                     }
 
@@ -1538,8 +1552,8 @@ public class JavaScriptCompressor {
                     }
                     break;
 
-                case Token.SPECIALCOMMENT:
-                case Token.CSTYLECOMMENT:
+                case Token.CONDCOMMENT:
+                case Token.KEEPCOMMENT:
                     if (result.length() > 0 && result.charAt(result.length() - 1) != '\n') {
                         result.append("\n");
                     }
