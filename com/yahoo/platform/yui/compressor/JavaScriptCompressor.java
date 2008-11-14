@@ -700,13 +700,14 @@ public class JavaScriptCompressor {
         StringBuffer result = new StringBuffer();
         int start = Math.max(offset - max, 0);
         int end = Math.min(offset + max, tokens.size());
+        int markAt = offset - 1;
         for (int i = start; i < end; i++) {
             JavaScriptToken token = (JavaScriptToken) tokens.get(i);
-            if (i == offset - 1) {
+            if (i == markAt) {
                 result.append(" ---> ");
             }
             result.append(token.getValue());
-            if (i == offset - 1) {
+            if (i == markAt) {
                 result.append(" <--- ");
             }
         }
@@ -997,11 +998,12 @@ public class JavaScriptCompressor {
                 getToken(-5).getType() == Token.STRING)) {
             JavaScriptIdentifier identifier;
             String hints;
-            if (evalNoAssign) {
-                hints = getToken(-3).getValue();
-            } else {
-                hints = getToken(-5).getValue();
-            }
+            
+            // change offset so warn() works OK
+            offset -= evalNoAssign ? 2 : 4;
+            
+            hints = getToken(-1).getValue();
+            
             // Remove the leading and trailing quotes...
             hints = hints.substring(1, hints.length() - 1).trim();
             StringTokenizer st = new StringTokenizer(hints, ",");
@@ -1029,8 +1031,11 @@ public class JavaScriptCompressor {
                 }
             }
             // remove hint tokens
-            tokens.set(offset - (evalNoAssign ? 2 : 4), new JavaScriptToken(Token.EMPTY, ""));
-            tokens.set(offset - (evalNoAssign ? 3 : 5), new JavaScriptToken(Token.EMPTY, ""));
+            tokens.set(offset - 1, new JavaScriptToken(Token.EMPTY, ""));
+            tokens.set(offset,     new JavaScriptToken(Token.EMPTY, ""));
+            
+            // restore offset
+            offset += evalNoAssign ? 2 : 4;
             warn("Using 'eval' is not recommended.", true);
         } else {
             protectScopeFromObfuscation(scope);
