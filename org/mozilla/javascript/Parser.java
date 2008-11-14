@@ -166,10 +166,11 @@ public class Parser
 
             while ((tt = ts.getToken()) == Token.CONDCOMMENT || tt == Token.KEEPCOMMENT) {
                 if (tt == Token.CONDCOMMENT) {
-                    decompiler.addPreservedComment(ts.getString());
-                } else {
                     /* Support for JScript conditional comments */
                     decompiler.addJScriptConditionalComment(ts.getString());
+                } else {
+                    /* Support for preserved comments */
+                    decompiler.addPreservedComment(ts.getString());
                 }
             }
 

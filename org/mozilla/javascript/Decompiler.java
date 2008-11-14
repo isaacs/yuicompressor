@@ -171,13 +171,13 @@ public class Decompiler
         addToken(Token.CONDCOMMENT);
         appendString(str);
     }
-    
+
     void addPreservedComment(String str)
     {
         addToken(Token.KEEPCOMMENT);
         appendString(str);
     }
-    
+
     void addNumber(double n)
     {
         addToken(Token.NUMBER);

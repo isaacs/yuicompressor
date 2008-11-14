@@ -252,7 +252,6 @@ public class Token
         SETCONSTVAR    = 151,
 
         CONDCOMMENT    = 152,  // JScript conditional comment
-
         KEEPCOMMENT    = 153,  // /*! ... */ comment
 
         LAST_TOKEN     = 154;
