@@ -876,17 +876,13 @@ public class JavaScriptCompressor {
 
                             if (identifier == null) {
 
-                                if (!builtin.contains(symbol)) {
-                                    if (symbol.length() <= 3) {
-                                        // Here, we found an undeclared and un-namespaced symbol that is
-                                        // 3 characters or less in length. Declare it in the global scope.
-                                        // We don't need to declare longer symbols since they won't cause
-                                        // any conflict with other munged symbols.
-                                        identifier = globalScope.declareIdentifier(symbol, false);
-                                    }
-                                    if (currentScope != globalScope) {
-                                        warn("Found an undeclared symbol: " + symbol, true);
-                                    }
+                                if (symbol.length() <= 3 && !builtin.contains(symbol)) {
+                                    // Here, we found an undeclared and un-namespaced symbol that is
+                                    // 3 characters or less in length. Declare it in the global scope.
+                                    // We don't need to declare longer symbols since they won't cause
+                                    // any conflict with other munged symbols.
+                                    globalScope.declareIdentifier(symbol, false);
+                                    warn("Found an undeclared symbol: " + symbol, true);
                                 }
 
                             } else {
@@ -1273,7 +1269,6 @@ public class JavaScriptCompressor {
                                 !globalScope.hasIdentifier(symbol) &&
                                 (!processedScopes.contains(currentScope) || currentScope.getVarIdentifiersSize() == 1)) {
                             warn("The symbol " + symbol + " is declared but is apparently never used.", true);
-                            //break;
                         }
                         
                         // skip ";variable;"
@@ -1289,9 +1284,6 @@ public class JavaScriptCompressor {
                                 result.append(identifier.getMungedValue());
                             } else {
                                 result.append(symbol);
-                            }
-                            if (currentScope != globalScope && identifier.getRefcount() == 0) {
-                                warn("The symbol " + symbol + " is declared but is apparently never used.\nThis code can probably be written in a more compact way.", true);
                             }
                         } else {
                             result.append(symbol);
