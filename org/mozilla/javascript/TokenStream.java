@@ -727,11 +727,11 @@ class TokenStream
                                     if (s.startsWith("!")) {
                                         // Remove the leading '!'
                                         this.string = s.substring(1);
-                                        return Token.CSTYLECOMMENT;
+                                        return Token.KEEPCOMMENT;
                                     } else {
                                         this.string = s;
                                     }
-                                    return Token.SPECIALCOMMENT;
+                                    return Token.CONDCOMMENT;
                                 } else {
                                     continue retry;
                                 }
