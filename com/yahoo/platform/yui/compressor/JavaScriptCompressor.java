@@ -904,9 +904,9 @@ public class JavaScriptCompressor {
         // hint has a following format: "someVar:use,x:create"
         // hint can be before eval in following cases:
         // evalNoAssign = { or ;"hint";    eval("code)";
-        // { or ;"hint";x = eval("code");
+        // { or } or ;"hint";x = eval("code");
         boolean evalNoAssign = (offset > 4 &&
-                (getToken(-4).getType() == Token.SEMI || getToken(-4).getType() == Token.LC) &&
+                (getToken(-4).getType() == Token.SEMI || getToken(-4).getType() == Token.LC || getToken(-4).getType() == Token.RC) &&
                 getToken(-3).getType() == Token.STRING && getToken(-2).getType() == Token.SEMI);
         if (evalNoAssign ||
             (offset > 6 &&
@@ -1207,8 +1207,10 @@ public class JavaScriptCompressor {
 
                 JavaScriptIdentifier thisIdentifier = currentScope.getThisIdentifier();
                 int len = declaredIdentifiers.size();
-                if (len > 1 || (thisAsVar && thisIdentifier != null)) {
+                //if (len > 1 || (thisAsVar && thisIdentifier != null && (len == 0 || declaredIdentifiers.get(0) != thisIdentifier))) {
+                if (len > 1 || (thisAsVar && thisIdentifier != null && thisIdentifier.getMungedValue() != null)) {
                     result.append("var ");
+                    boolean thisDeclared = false;
                     for (int i = 0; i<len; i++) {
                         identifier = (JavaScriptIdentifier) declaredIdentifiers.get(i);
                         symbol = identifier.getValue();
@@ -1235,12 +1237,13 @@ public class JavaScriptCompressor {
                         }
                         if (identifier == thisIdentifier) {
                             result.append("=this");
+                            thisDeclared = true;
                         }
                         result.append(',');
                     }
                     
-                    if (len <= 1) {
-                        result.append(currentScope.getThisIdentifier().getMungedValue());
+                    if (thisAsVar && !thisDeclared && thisIdentifier != null && thisIdentifier.getMungedValue() != null) {
+                        result.append(thisIdentifier.getMungedValue());
                         result.append("=this;");
                     } else {
                         result.setCharAt(result.length() - 1, ';');
@@ -1272,7 +1275,7 @@ public class JavaScriptCompressor {
                         }
                         
                         // skip ";variable;"
-                        if (offset > 2 && 
+                        if (!inForLoop && offset > 2 && 
                                 (getToken(-2).getType() == Token.SEMI) &&
                                  getToken(0) .getType() == Token.SEMI) {
                             offset++;
@@ -1280,6 +1283,15 @@ public class JavaScriptCompressor {
                         }
                         
                         if (identifier != null) {
+                            // skip x = this; if x as this was already declared
+                            if (thisAsVar &&
+                                    identifier == currentScope.getThisIdentifier() &&
+                                    getToken(0).getType() == Token.ASSIGN &&
+                                    getToken(1).getType() == Token.THIS &&
+                                   (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.SEMI)) {
+                                offset += 3;
+                                break;
+                            }
                             if (identifier.getMungedValue() != null) {
                                 result.append(identifier.getMungedValue());
                             } else {
@@ -1482,14 +1494,15 @@ public class JavaScriptCompressor {
                     break;
                     
                 case Token.VAR:
-                    token = getToken(0);
-                    if ((currentScope.getVarIdentifiersSize() > 1 || (thisAsVar && currentScope.getThisIdentifier() != null))) {
+                    if (currentScope.getVarIdentifiersSize() > 1 || (thisAsVar && currentScope.getThisIdentifier() != null)) {
                         if (getToken(1).getType() == Token.SEMI) {
                             offset += 2;
                         }
                         break;
                     }
-                    /*identifier = currentScope.getIdentifier(token.getValue());
+                    /*
+                    token = getToken(0);
+                    identifier = currentScope.getIdentifier(token.getValue());
                     if (disableOptimizations || identifier == null ||
                             identifier.getType() == Token.NAME &&
                             currentScope.getVarIdentifiersSize() == 1 &&
@@ -1499,8 +1512,7 @@ public class JavaScriptCompressor {
                     break;
                     
                 case Token.THIS:
-                    
-                    if (thisAsVar && (identifier = currentScope.getThisIdentifier()) != null) {
+                    if (thisAsVar && (identifier = currentScope.getThisIdentifier()) != null && identifier.getMungedValue() != null) {
                         result.append(identifier.getMungedValue());
                     } else {
                         result.append("this");
