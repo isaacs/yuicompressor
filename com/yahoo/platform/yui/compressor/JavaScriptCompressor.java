@@ -1215,19 +1215,9 @@ public class JavaScriptCompressor {
                         identifier = (JavaScriptIdentifier) declaredIdentifiers.get(i);
                         symbol = identifier.getValue();
                         if (identifier.getRefcount() == 0) {
-                            /*int oldOffset = offset;
-                            do {
-                                offset++;
-                                token = getToken(offset);
-                                if (offset == length || token.getType() == Token.NAME && symbol.equals(token.getValue())) {
-                                    break;
-                                }
-                            } while (true);
-                            */
-                            //offset+=2;
                             warn("The symbol " + symbol + " is declared but is apparently never used.", false);
-                            //offset = oldOffset;
-                            continue;
+                            // DON'T SKIP IT, just warn!!
+                            //continue;
                         }
                         String mungedValue = identifier.getMungedValue();
                         if (mungedValue != null) {
