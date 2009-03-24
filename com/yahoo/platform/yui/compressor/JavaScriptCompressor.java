@@ -1216,8 +1216,7 @@ public class JavaScriptCompressor {
                         symbol = identifier.getValue();
                         if (identifier.getRefcount() == 0) {
                             warn("The symbol " + symbol + " is declared but is apparently never used.", false);
-                            // DON'T SKIP IT, just warn!!
-                            //continue;
+                            continue;
                         }
                         String mungedValue = identifier.getMungedValue();
                         if (mungedValue != null) {
@@ -1256,14 +1255,25 @@ public class JavaScriptCompressor {
                     } else {
 
                         identifier = getIdentifier(symbol, currentScope);
-                        if (identifier != null &&
-                                currentScope != globalScope &&
-                                identifier.getRefcount() == 0 &&
-                                !globalScope.hasIdentifier(symbol) &&
-                                (!processedScopes.contains(currentScope) || currentScope.getVarIdentifiersSize() == 1)) {
-                            warn("The symbol " + symbol + " is declared but is apparently never used.", true);
+
+                        if (identifier != null) {
+
+                            // skip unused declared variables with assignment
+                            if (identifier.getRefcount() == 0 &&
+                                    getToken(0).getType() == Token.ASSIGN &&
+                                    (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.COMMA)) {
+                                offset += 3;
+                                break;
+                            }
+
+                            if (currentScope != globalScope &&
+                                    identifier.getRefcount() == 0 &&
+                                    !globalScope.hasIdentifier(symbol) &&
+                                    (!processedScopes.contains(currentScope) || currentScope.getVarIdentifiersSize() == 1)) {
+                                warn("The symbol " + symbol + " is declared but is apparently never used.", true);
+                            }
                         }
-                        
+
                         // skip ";variable;"
                         if (!inForLoop && offset > 2 && 
                                 (getToken(-2).getType() == Token.SEMI) &&
@@ -1278,7 +1288,7 @@ public class JavaScriptCompressor {
                                     identifier == currentScope.getThisIdentifier() &&
                                     getToken(0).getType() == Token.ASSIGN &&
                                     getToken(1).getType() == Token.THIS &&
-                                   (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.SEMI)) {
+                                   (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.COMMA)) {
                                 offset += 3;
                                 break;
                             }
