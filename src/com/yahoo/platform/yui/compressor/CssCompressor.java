@@ -39,7 +39,9 @@ public class CssCompressor {
         startIndex = 0;
         boolean iemac = false;
         boolean preserve = false;
-        sb = new StringBuffer(srcsb.toString());
+        // Preserve this IE hack: CSS hack html>/**/body
+        String str_srcsb = srcsb.toString().replace("html>/**/body", "___IE_HTML_BODY_HACK___");
+        sb = new StringBuffer(str_srcsb);
         while ((startIndex = sb.indexOf("/*", startIndex)) >= 0) {
             preserve = sb.length() > startIndex + 2 && sb.charAt(startIndex + 2) == '!';
             endIndex = sb.indexOf("*/", startIndex + 2);
@@ -65,6 +67,9 @@ public class CssCompressor {
         }
 
         css = sb.toString();
+
+        // Restore this IE hack: CSS hack html>/**/body
+        css = css.replace("___IE_HTML_BODY_HACK___", "html>/**/body");
 
         // Normalize all whitespace strings to single spaces. Easier to work with that way.
         css = css.replaceAll("\\s+", " ");
