@@ -177,6 +177,9 @@ public class CssCompressor {
         // See SF bug #1980989
         css = css.replaceAll(";;+", ";");
 
+        // Remove unneeded final semicolons.
+        css = css.replaceAll(";\\}", "}");
+
         // Trim the final string (for any leading or trailing white spaces)
         css = css.trim();
 
