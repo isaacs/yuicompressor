@@ -38,9 +38,9 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public CombinatorCondition createAndCondition(Condition first, 
-						  Condition second)
-	    throws CSSException {
-	return new AndConditionImpl(first, second);
+                                                  Condition second)
+            throws CSSException {
+        return new AndConditionImpl(first, second);
     }
 
     /**
@@ -52,9 +52,9 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public CombinatorCondition createOrCondition(Condition first, 
-						 Condition second)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+                                                 Condition second)
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -65,8 +65,8 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public NegativeCondition createNegativeCondition(Condition condition)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
 
@@ -83,10 +83,10 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public PositionalCondition createPositionalCondition(int position, 
-						  boolean typeNode, 
-						  boolean type)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+                                                  boolean typeNode, 
+                                                  boolean type)
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -101,15 +101,15 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public AttributeCondition createAttributeCondition(String localName,
-						String namespaceURI,
-						boolean specified,
-						String value)
-	    throws CSSException {
-	if ((namespaceURI != null) || specified) {
-	    throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
-	} else {
-	    return new AttributeConditionImpl(localName, value);
-	}
+                                                String namespaceURI,
+                                                boolean specified,
+                                                String value)
+            throws CSSException {
+        if ((namespaceURI != null) || specified) {
+            throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        } else {
+            return new AttributeConditionImpl(localName, value);
+        }
     }
 
     /**
@@ -120,8 +120,8 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public AttributeCondition createIdCondition(String value)
-	    throws CSSException {
-	return new IdConditionImpl(value);
+            throws CSSException {
+        return new IdConditionImpl(value);
     }
 
     /**
@@ -132,8 +132,8 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public LangCondition createLangCondition(String lang)
-	    throws CSSException {
-	return new LangConditionImpl(lang);
+            throws CSSException {
+        return new LangConditionImpl(lang);
     }
 
     /**
@@ -148,15 +148,15 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public AttributeCondition createOneOfAttributeCondition(String localName,
-						     String namespaceURI,
-						     boolean specified,
-						     String value)
-	    throws CSSException {
-	if ((namespaceURI != null) || specified) {
-	    throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
-	} else {
-	    return new OneOfAttributeConditionImpl(localName, value);
-	}
+                                                     String namespaceURI,
+                                                     boolean specified,
+                                                     String value)
+            throws CSSException {
+        if ((namespaceURI != null) || specified) {
+            throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        } else {
+            return new OneOfAttributeConditionImpl(localName, value);
+        }
     }
 
     /**
@@ -171,15 +171,15 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public AttributeCondition createBeginHyphenAttributeCondition(String localName,
-							   String namespaceURI,
-							   boolean specified,
-							   String value)
-	    throws CSSException {
-	if ((namespaceURI != null) || specified) {
-	    throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
-	} else {
-	    return new BeginHyphenAttributeConditionImpl(localName, value);
-	}
+                                                           String namespaceURI,
+                                                           boolean specified,
+                                                           String value)
+            throws CSSException {
+        if ((namespaceURI != null) || specified) {
+            throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        } else {
+            return new BeginHyphenAttributeConditionImpl(localName, value);
+        }
     }
 
     /**
@@ -194,9 +194,9 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public AttributeCondition createClassCondition(String namespaceURI,
-					    String value)
-	    throws CSSException {
-	return new ClassConditionImpl(value);
+                                            String value)
+            throws CSSException {
+        return new ClassConditionImpl(value);
     }
 
     /**
@@ -208,9 +208,9 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public AttributeCondition createPseudoClassCondition(String namespaceURI,
-							 String value)
-	    throws CSSException {
-	return new PseudoClassConditionImpl(value);
+                                                         String value)
+            throws CSSException {
+        return new PseudoClassConditionImpl(value);
     }
 
     /**
@@ -220,7 +220,7 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public Condition createOnlyChildCondition() throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -230,7 +230,7 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public Condition createOnlyTypeCondition() throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -241,7 +241,7 @@ public class ConditionFactoryImpl implements ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     public ContentCondition createContentCondition(String data)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }    
 }

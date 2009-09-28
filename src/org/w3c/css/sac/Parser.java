@@ -118,7 +118,7 @@ public interface Parser {
      * @see #setErrorHandler
      */
     public void parseStyleSheet(InputSource source) 
-	throws CSSException, IOException;
+        throws CSSException, IOException;
     
     
     /**
@@ -155,7 +155,7 @@ public interface Parser {
      *            supplied by the application.
      */
     public void parseStyleDeclaration(InputSource source) 
-	throws CSSException, IOException;
+        throws CSSException, IOException;
 
 
     /**

@@ -28,14 +28,14 @@ public class PseudoClassConditionImpl implements AttributeCondition {
      * Creates a new AttributeConditionImpl
      */
     public PseudoClassConditionImpl(String value) {
-	this.value     = value;
+        this.value     = value;
     }
     
     /**
      * An integer indicating the type of <code>Condition</code>.
      */    
     public short getConditionType() {
-	return Condition.SAC_PSEUDO_CLASS_CONDITION;
+        return Condition.SAC_PSEUDO_CLASS_CONDITION;
     }
 
     /**
@@ -49,7 +49,7 @@ public class PseudoClassConditionImpl implements AttributeCondition {
      * </ul>
      */    
     public String getNamespaceURI() {
-	return null;
+        return null;
     }
 
     /**
@@ -67,7 +67,7 @@ public class PseudoClassConditionImpl implements AttributeCondition {
      * </ul>
      */
     public String getLocalName() {
-	return null;
+        return null;
     }
 
     /**
@@ -75,7 +75,7 @@ public class PseudoClassConditionImpl implements AttributeCondition {
      * in the original document, <code>false</code> otherwise.
      */
     public boolean getSpecified() {
-	return true;
+        return true;
     }
 
     /**
@@ -84,7 +84,7 @@ public class PseudoClassConditionImpl implements AttributeCondition {
      * the class name (or psedo class name) without the '.' or ':'.
      */
     public String getValue() {
-	return value;
+        return value;
     }
 }
 

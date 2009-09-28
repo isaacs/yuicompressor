@@ -27,19 +27,19 @@ public interface Condition {
      * </pre>
      * @see CombinatorCondition
      */    
-    public static final short SAC_AND_CONDITION		        = 0;
+    public static final short SAC_AND_CONDITION                        = 0;
 
     /**
      * This condition checks one of two conditions.
      * @see CombinatorCondition
      */    
-    public static final short SAC_OR_CONDITION		        = 1;
+    public static final short SAC_OR_CONDITION                        = 1;
 
     /**
      * This condition checks that a condition can't be applied to a node.
      * @see NegativeCondition
      */    
-    public static final short SAC_NEGATIVE_CONDITION		= 2;
+    public static final short SAC_NEGATIVE_CONDITION                = 2;
 
     /**
      * This condition checks a specified position.
@@ -49,7 +49,7 @@ public interface Condition {
      * </pre>
      * @see PositionalCondition
      */    
-    public static final short SAC_POSITIONAL_CONDITION		= 3;
+    public static final short SAC_POSITIONAL_CONDITION                = 3;
 
     /**
      * This condition checks an attribute.
@@ -60,7 +60,7 @@ public interface Condition {
      * </pre>
      * @see AttributeCondition
      */    
-    public static final short SAC_ATTRIBUTE_CONDITION		= 4;
+    public static final short SAC_ATTRIBUTE_CONDITION                = 4;
     /**
      * This condition checks an id attribute.
      * example:
@@ -69,7 +69,7 @@ public interface Condition {
      * </pre>
      * @see AttributeCondition
      */    
-    public static final short SAC_ID_CONDITION		        = 5;
+    public static final short SAC_ID_CONDITION                        = 5;
     /**
      * This condition checks the language of the node.
      * example:
@@ -78,7 +78,7 @@ public interface Condition {
      * </pre>
      * @see LangCondition
      */    
-    public static final short SAC_LANG_CONDITION		= 6;
+    public static final short SAC_LANG_CONDITION                = 6;
     /**
      * This condition checks for a value in a space-separated values in a
      * specified attribute
@@ -88,7 +88,7 @@ public interface Condition {
      * </pre>
      * @see AttributeCondition
      */
-    public static final short SAC_ONE_OF_ATTRIBUTE_CONDITION	= 7;
+    public static final short SAC_ONE_OF_ATTRIBUTE_CONDITION        = 7;
     /**
      * This condition checks if the value is in a hypen-separated list of values
      * in a specified attribute.
@@ -107,7 +107,7 @@ public interface Condition {
      * </pre>
      * @see AttributeCondition
      */
-    public static final short SAC_CLASS_CONDITION		= 9;
+    public static final short SAC_CLASS_CONDITION                = 9;
     /**
      * This condition checks for the link pseudo class.
      * example:
@@ -118,20 +118,20 @@ public interface Condition {
      * </pre>
      * @see AttributeCondition
      */
-    public static final short SAC_PSEUDO_CLASS_CONDITION	= 10;
+    public static final short SAC_PSEUDO_CLASS_CONDITION        = 10;
     /**
      * This condition checks if a node is the only one in the node list.
      */
-    public static final short SAC_ONLY_CHILD_CONDITION		= 11;
+    public static final short SAC_ONLY_CHILD_CONDITION                = 11;
     /**
      * This condition checks if a node is the only one of his type.
      */
-    public static final short SAC_ONLY_TYPE_CONDITION		= 12;
+    public static final short SAC_ONLY_TYPE_CONDITION                = 12;
     /**
      * This condition checks the content of a node.
      * @see ContentCondition
      */
-    public static final short SAC_CONTENT_CONDITION		= 13;
+    public static final short SAC_CONTENT_CONDITION                = 13;
 
     /**
      * An integer indicating the type of <code>Condition</code>.

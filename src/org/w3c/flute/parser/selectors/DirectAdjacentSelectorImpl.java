@@ -30,33 +30,33 @@ public class DirectAdjacentSelectorImpl implements SiblingSelector {
      * An integer indicating the type of <code>Selector</code>
      */
     public short getSelectorType() {
-	return Selector.SAC_DIRECT_ADJACENT_SELECTOR;
+        return Selector.SAC_DIRECT_ADJACENT_SELECTOR;
     }
 
     /**
      * Creates a new DescendantSelectorImpl
      */
     public DirectAdjacentSelectorImpl(Selector child, 
-				      SimpleSelector directAdjacent) {
+                                      SimpleSelector directAdjacent) {
         this.child = child;
-	this.directAdjacent = directAdjacent;
+        this.directAdjacent = directAdjacent;
     }
     
     public short getNodeType() {
-	return 1;
+        return 1;
     }
         
     /**
      * Returns the parent selector.
      */    
     public Selector getSelector() {
-	return child;
+        return child;
     }
 
     /*
      * Returns the simple selector.
      */    
     public SimpleSelector getSiblingSelector() {
-	return directAdjacent;
+        return directAdjacent;
     }
 }

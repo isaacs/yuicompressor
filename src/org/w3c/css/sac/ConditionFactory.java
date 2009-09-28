@@ -28,7 +28,7 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     CombinatorCondition createAndCondition(Condition first, Condition second)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates an or condition
@@ -39,7 +39,7 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     CombinatorCondition createOrCondition(Condition first, Condition second)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a negative condition
@@ -49,7 +49,7 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     NegativeCondition createNegativeCondition(Condition condition)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a positional condition
@@ -64,9 +64,9 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     PositionalCondition createPositionalCondition(int position, 
-						  boolean typeNode, 
-						  boolean type)
-	throws CSSException;
+                                                  boolean typeNode, 
+                                                  boolean type)
+        throws CSSException;
     
     /**
      * Creates an attribute condition
@@ -80,10 +80,10 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     AttributeCondition createAttributeCondition(String localName,
-						String namespaceURI,
-						boolean specified,
-						String value)
-	throws CSSException;
+                                                String namespaceURI,
+                                                boolean specified,
+                                                String value)
+        throws CSSException;
 
     /**
      * Creates an id condition
@@ -93,7 +93,7 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     AttributeCondition createIdCondition(String value)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a lang condition
@@ -103,7 +103,7 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     LangCondition createLangCondition(String lang)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a "one of" attribute condition
@@ -117,10 +117,10 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     AttributeCondition createOneOfAttributeCondition(String localName,
-						     String namespaceURI,
-						     boolean specified,
-						     String value)
-	throws CSSException;
+                                                     String namespaceURI,
+                                                     boolean specified,
+                                                     String value)
+        throws CSSException;
 
     /**
      * Creates a "begin hyphen" attribute condition
@@ -134,10 +134,10 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     AttributeCondition createBeginHyphenAttributeCondition(String localName,
-							   String namespaceURI,
-							   boolean specified,
-							   String value)
-	throws CSSException;
+                                                           String namespaceURI,
+                                                           boolean specified,
+                                                           String value)
+        throws CSSException;
 
     /**
      * Creates a class condition
@@ -151,8 +151,8 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     AttributeCondition createClassCondition(String namespaceURI,
-					    String value)
-	throws CSSException;
+                                            String value)
+        throws CSSException;
 
     /**
      * Creates a pseudo class condition
@@ -163,8 +163,8 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     AttributeCondition createPseudoClassCondition(String namespaceURI,
-						  String value)
-	throws CSSException;
+                                                  String value)
+        throws CSSException;
 
     /**
      * Creates a "only one" child condition
@@ -191,7 +191,7 @@ public interface ConditionFactory {
      * @exception CSSException if this exception is not supported.
      */    
     ContentCondition createContentCondition(String data)
-	throws CSSException;
+        throws CSSException;
 
     
 }

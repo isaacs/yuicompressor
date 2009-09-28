@@ -30,14 +30,14 @@ public class OneOfAttributeConditionImpl implements AttributeCondition {
      */
     public OneOfAttributeConditionImpl(String localName, String value) {
         this.localName = localName;
-	this.value     = value;
+        this.value     = value;
     }
     
     /**
      * An integer indicating the type of <code>Condition</code>.
      */    
     public short getConditionType() {
-	return Condition.SAC_ONE_OF_ATTRIBUTE_CONDITION;
+        return Condition.SAC_ONE_OF_ATTRIBUTE_CONDITION;
     }
 
     /**
@@ -51,7 +51,7 @@ public class OneOfAttributeConditionImpl implements AttributeCondition {
      * </ul>
      */    
     public String getNamespaceURI() {
-	return null;
+        return null;
     }
 
     /**
@@ -69,7 +69,7 @@ public class OneOfAttributeConditionImpl implements AttributeCondition {
      * </ul>
      */
     public String getLocalName() {
-	return localName;
+        return localName;
     }
 
     /**
@@ -77,7 +77,7 @@ public class OneOfAttributeConditionImpl implements AttributeCondition {
      * in the original document, <code>false</code> otherwise.
      */
     public boolean getSpecified() {
-	return false;
+        return false;
     }
 
     /**
@@ -86,7 +86,7 @@ public class OneOfAttributeConditionImpl implements AttributeCondition {
      * the class name (or psedo class name) without the '.' or ':'.
      */
     public String getValue() {
-	return value;
+        return value;
     }
 }
 

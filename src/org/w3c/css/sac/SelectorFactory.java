@@ -29,8 +29,8 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     ConditionalSelector createConditionalSelector(SimpleSelector selector,
-						  Condition condition) 
-	throws CSSException;
+                                                  Condition condition) 
+        throws CSSException;
 
     /**
      * Creates an any node selector.
@@ -56,7 +56,7 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     NegativeSelector createNegativeSelector(SimpleSelector selector) 
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates an element selector.
@@ -70,7 +70,7 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     ElementSelector createElementSelector(String namespaceURI, String tagName) 
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a text node selector.
@@ -80,7 +80,7 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     CharacterDataSelector createTextNodeSelector(String data)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a cdata section node selector.
@@ -90,7 +90,7 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     CharacterDataSelector createCDataSectionSelector(String data)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a processing instruction node selector.
@@ -101,9 +101,9 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     ProcessingInstructionSelector 
-	createProcessingInstructionSelector(String target,
-					    String data)
-	throws CSSException;
+        createProcessingInstructionSelector(String target,
+                                            String data)
+        throws CSSException;
 
     /**
      * Creates a comment node selector.
@@ -113,7 +113,7 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     CharacterDataSelector createCommentSelector(String data)
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Creates a pseudo element selector.
@@ -124,8 +124,8 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     ElementSelector createPseudoElementSelector(String namespaceURI, 
-						String pseudoName) 
-	throws CSSException;
+                                                String pseudoName) 
+        throws CSSException;
 
     /**
      * Creates a descendant selector.
@@ -136,8 +136,8 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     DescendantSelector createDescendantSelector(Selector parent,
-					     SimpleSelector descendant)
-	throws CSSException;
+                                             SimpleSelector descendant)
+        throws CSSException;
 
     /**
      * Creates a child selector.
@@ -148,8 +148,8 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     DescendantSelector createChildSelector(Selector parent,
-					   SimpleSelector child)
-	throws CSSException;
+                                           SimpleSelector child)
+        throws CSSException;
 
     /**
      * Creates a sibling selector.
@@ -162,7 +162,7 @@ public interface SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */
     SiblingSelector createDirectAdjacentSelector(short nodeType,
-						 Selector child,
-						 SimpleSelector directAdjacent)
-	throws CSSException;
+                                                 Selector child,
+                                                 SimpleSelector directAdjacent)
+        throws CSSException;
 }

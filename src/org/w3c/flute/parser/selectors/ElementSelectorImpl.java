@@ -35,7 +35,7 @@ public class ElementSelectorImpl implements ElementSelector {
      * An integer indicating the type of <code>Selector</code>
      */
     public short getSelectorType() {
-	return Selector.SAC_ELEMENT_NODE_SELECTOR;
+        return Selector.SAC_ELEMENT_NODE_SELECTOR;
     }
     
     /**
@@ -45,7 +45,7 @@ public class ElementSelectorImpl implements ElementSelector {
      * <p><code>NULL</code> if this element selector can match any namespace.</p>
      */
     public String getNamespaceURI() {
-	return null;
+        return null;
     }
 
     /**
@@ -58,6 +58,6 @@ public class ElementSelectorImpl implements ElementSelector {
      * </ul>
      */
     public String getLocalName() {
-	return localName;
+        return localName;
     }
 }

@@ -46,11 +46,11 @@ public class CSSParseException extends CSSException {
      * @see Parser#setLocale 
      */
     public CSSParseException(String message, Locator locator) {
-	super(message);
-	this.code = SAC_SYNTAX_ERR;
-	this.uri = locator.getURI();
-	this.lineNumber = locator.getLineNumber();
-	this.columnNumber = locator.getColumnNumber();
+        super(message);
+        this.code = SAC_SYNTAX_ERR;
+        this.uri = locator.getURI();
+        this.lineNumber = locator.getLineNumber();
+        this.columnNumber = locator.getColumnNumber();
     }
     
     
@@ -71,11 +71,11 @@ public class CSSParseException extends CSSException {
      * @see Parser#setLocale
      */
     public CSSParseException(String message, Locator locator,
-			     Exception e) {
-	super(SAC_SYNTAX_ERR, message, e);
-	this.uri = locator.getURI();
-	this.lineNumber = locator.getLineNumber();
-	this.columnNumber = locator.getColumnNumber();
+                             Exception e) {
+        super(SAC_SYNTAX_ERR, message, e);
+        this.uri = locator.getURI();
+        this.lineNumber = locator.getLineNumber();
+        this.columnNumber = locator.getColumnNumber();
     }
     
     
@@ -95,12 +95,12 @@ public class CSSParseException extends CSSException {
      * @see Parser#setLocale
      */
     public CSSParseException(String message, String uri,
-			     int lineNumber, int columnNumber) {
-	super(message);
-	this.code = SAC_SYNTAX_ERR;
-	this.uri = uri;
-	this.lineNumber = lineNumber;
-	this.columnNumber = columnNumber;
+                             int lineNumber, int columnNumber) {
+        super(message);
+        this.code = SAC_SYNTAX_ERR;
+        this.uri = uri;
+        this.lineNumber = lineNumber;
+        this.columnNumber = columnNumber;
     }
         
     /**
@@ -125,11 +125,11 @@ public class CSSParseException extends CSSException {
      * @see Parser#setLocale 
      */
     public CSSParseException(String message, String uri,
-			     int lineNumber, int columnNumber, Exception e) {
-	super(SAC_SYNTAX_ERR, message, e);
-	this.uri = uri;
-	this.lineNumber = lineNumber;
-	this.columnNumber = columnNumber;
+                             int lineNumber, int columnNumber, Exception e) {
+        super(SAC_SYNTAX_ERR, message, e);
+        this.uri = uri;
+        this.lineNumber = lineNumber;
+        this.columnNumber = columnNumber;
     }
     
     /**
@@ -142,7 +142,7 @@ public class CSSParseException extends CSSException {
      * @see Locator#getURI
      */
     public String getURI() {
-	return this.uri;
+        return this.uri;
     }
     
     
@@ -154,7 +154,7 @@ public class CSSParseException extends CSSException {
      * @see Locator#getLineNumber
      */
     public int getLineNumber() {
-	return this.lineNumber;
+        return this.lineNumber;
     }
     
     
@@ -168,6 +168,6 @@ public class CSSParseException extends CSSException {
      * @see Locator#getColumnNumber
      */
     public int getColumnNumber() {
-	return this.columnNumber;
+        return this.columnNumber;
     }
 }

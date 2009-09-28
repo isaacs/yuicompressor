@@ -35,13 +35,13 @@ public class LangConditionImpl implements LangCondition {
      * An integer indicating the type of <code>Condition</code>.
      */    
     public short getConditionType() {
-	return Condition.SAC_LANG_CONDITION;
+        return Condition.SAC_LANG_CONDITION;
     }
 
     /**
      * Returns the language
      */
     public String getLang() {
-	return lang;
+        return lang;
     }
 }

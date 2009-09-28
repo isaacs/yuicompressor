@@ -1546,10 +1546,10 @@ char connector = ' ';
      StringBuffer s = new StringBuffer();
      s.append(getToken(0).image);
      while ((t.kind != COMMA) && (t.kind != SEMICOLON) 
-	    && (t.kind != LBRACE) && (t.kind != EOF)) {
-	 s.append(t.image);
-	 getNextToken();
-	 t = getToken(1);
+            && (t.kind != LBRACE) && (t.kind != EOF)) {
+         s.append(t.image);
+         getNextToken();
+         t = getToken(1);
      }
      reportWarningSkipText(getLocator(), s.toString());
      */
@@ -2112,10 +2112,10 @@ Token language;
          }
          skipAfterExpression();
          /*
-	 LocatorImpl loc = (LocatorImpl) getLocator();
-	 loc.column--;
-	 reportWarningSkipText(loc, skipAfterExpression());
-	 */
+         LocatorImpl loc = (LocatorImpl) getLocator();
+         loc.column--;
+         reportWarningSkipText(loc, skipAfterExpression());
+         */
      } else {
          skipAfterExpression();
      }
@@ -2446,25 +2446,25 @@ Token language;
           /* /
          Auto correction code used in the CSS Validator but must not
           be used by a conformant CSS2 parser.
-	 * Common error :
-	 * H1 {
-	 *   color : black
-	 *   background : white
-	 * }
-	 *
-	Token t = getToken(1);
-	Token semicolon = new Token();
-	semicolon.kind = SEMICOLON;
-	semicolon.image = ";";
-	if (t.kind == COLON) {
-	    // @@SEEME. (generate a warning?)
-	    // @@SEEME if expression is a single ident, 
-	       generate an error ?
-	    rejectToken(semicolon);
-	    
-	    result = prev;
-	}
-	/ */
+         * Common error :
+         * H1 {
+         *   color : black
+         *   background : white
+         * }
+         *
+        Token t = getToken(1);
+        Token semicolon = new Token();
+        semicolon.kind = SEMICOLON;
+        semicolon.image = ";";
+        if (t.kind == COLON) {
+            // @@SEEME. (generate a warning?)
+            // @@SEEME if expression is a single ident, 
+               generate an error ?
+            rejectToken(semicolon);
+            
+            result = prev;
+        }
+        / */
 
         break;
       case HASH:

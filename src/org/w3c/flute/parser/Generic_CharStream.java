@@ -231,7 +231,7 @@ public final class Generic_CharStream implements CharStream
   }
 
   public Generic_CharStream(java.io.Reader dstream, int startline,
-			    int startcolumn, int buffersize)
+                            int startcolumn, int buffersize)
   {
     reader = dstream;
     line = startline;
@@ -244,7 +244,7 @@ public final class Generic_CharStream implements CharStream
   }
 
   public Generic_CharStream(java.io.Reader dstream, int startline,
-			    int startcolumn)
+                            int startcolumn)
   {
      this(dstream, startline, startcolumn, 4096);
   }

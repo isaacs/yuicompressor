@@ -38,17 +38,17 @@ public class CSSException extends RuntimeException {
      * Default message for unspecified error.
      */
     protected static final String S_SAC_UNSPECIFIED_ERR
-	= "unknown error";
+        = "unknown error";
     /*
      * Default message for not supported error.
      */
     protected static final String S_SAC_NOT_SUPPORTED_ERR
-	= "not supported";
+        = "not supported";
     /*
      * Default message for syntax error.
      */
     protected static final String S_SAC_SYNTAX_ERR
-	= "syntax error";
+        = "syntax error";
 
     /**
      * The internal exception.
@@ -67,7 +67,7 @@ public class CSSException extends RuntimeException {
      * Creates a new CSSException
      */
     public CSSException(String s) {
-	this.code = SAC_UNSPECIFIED_ERR;
+        this.code = SAC_UNSPECIFIED_ERR;
         this.s = s;
     }
     
@@ -76,7 +76,7 @@ public class CSSException extends RuntimeException {
      * @param a the embeded exception.
      */
     public CSSException(Exception e) {
-	this.code = SAC_UNSPECIFIED_ERR;
+        this.code = SAC_UNSPECIFIED_ERR;
         this.e = e;
     }
 
@@ -95,8 +95,8 @@ public class CSSException extends RuntimeException {
      * @param e the embeded exception.  
      */
     public CSSException(short code, String s, Exception e) {
-	this.code = code;
-	this.s = s;
+        this.code = code;
+        this.s = s;
         this.e = e;
     }
 
@@ -107,36 +107,36 @@ public class CSSException extends RuntimeException {
      *         does not have a detail message.  
      */
     public String getMessage() {
-	if (s != null) {
-	    return s;
-	} else if (e != null) {
-	    return e.getMessage();
-	} else {
-	    switch (code) {
-	    case SAC_UNSPECIFIED_ERR:
-		return S_SAC_UNSPECIFIED_ERR;
-	    case SAC_NOT_SUPPORTED_ERR:
-		return S_SAC_NOT_SUPPORTED_ERR;
-	    case SAC_SYNTAX_ERR:
-		return S_SAC_SYNTAX_ERR;
-	    default:
-		return null;
-	    }
-	}
+        if (s != null) {
+            return s;
+        } else if (e != null) {
+            return e.getMessage();
+        } else {
+            switch (code) {
+            case SAC_UNSPECIFIED_ERR:
+                return S_SAC_UNSPECIFIED_ERR;
+            case SAC_NOT_SUPPORTED_ERR:
+                return S_SAC_NOT_SUPPORTED_ERR;
+            case SAC_SYNTAX_ERR:
+                return S_SAC_SYNTAX_ERR;
+            default:
+                return null;
+            }
+        }
     }
 
     /**
      * returns the error code for this exception.
      */    
     public short getCode() {
-	return code;
+        return code;
     }
 
     /**
      * Returns the internal exception if any, null otherwise.
      */    
     public Exception getException() {
-	return e;
+        return e;
     }
 
 }

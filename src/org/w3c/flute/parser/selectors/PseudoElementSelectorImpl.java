@@ -35,7 +35,7 @@ public class PseudoElementSelectorImpl implements ElementSelector {
      * An integer indicating the type of <code>Selector</code>
      */
     public short getSelectorType() {
-	return Selector.SAC_PSEUDO_ELEMENT_SELECTOR;
+        return Selector.SAC_PSEUDO_ELEMENT_SELECTOR;
     }
     
     /**
@@ -45,7 +45,7 @@ public class PseudoElementSelectorImpl implements ElementSelector {
      * <p><code>NULL</code> if this element selector can match any namespace.</p>
      */
     public String getNamespaceURI() {
-	return null;
+        return null;
     }
 
     /**
@@ -58,6 +58,6 @@ public class PseudoElementSelectorImpl implements ElementSelector {
      * </ul>
      */
     public String getLocalName() {
-	return localName;
+        return localName;
     }
 }

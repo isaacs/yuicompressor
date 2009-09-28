@@ -67,7 +67,7 @@ public class InputSource {
      * @see #setCharacterStream
      */
     public InputSource(String uri) {
-	setURI(uri);
+        setURI(uri);
     }
     
     /**
@@ -84,7 +84,7 @@ public class InputSource {
      * @see #setCharacterStream
      */
     public InputSource(Reader characterStream) {
-	setCharacterStream(characterStream);
+        setCharacterStream(characterStream);
     }
     
     /**
@@ -109,7 +109,7 @@ public class InputSource {
      * @see CSSParseException#getURI 
      */
     public void setURI(String uri) {
-	this.uri = uri;
+        this.uri = uri;
     }
     
     /**
@@ -125,7 +125,7 @@ public class InputSource {
      * @see #getEncoding
      */
     public String getURI() {
-	return uri;
+        return uri;
     }
     
     /**
@@ -145,7 +145,7 @@ public class InputSource {
      * @see #getEncoding
      */
     public void setByteStream(InputStream byteStream) {
-	this.byteStream = byteStream;
+        this.byteStream = byteStream;
     }
     
     /**
@@ -159,7 +159,7 @@ public class InputSource {
      * @see #setByteStream
      */
     public InputStream getByteStream() {
-	return byteStream;
+        return byteStream;
     }
     
     /** 
@@ -178,7 +178,7 @@ public class InputSource {
      * @see #getEncoding
      */
     public void setEncoding(String encoding) {
-	this.encoding = encoding;
+        this.encoding = encoding;
     }
     
     /**
@@ -190,7 +190,7 @@ public class InputSource {
      * @see #getByteStream
      */
     public String getEncoding() {
-	return encoding;
+        return encoding;
     }
     
     /**
@@ -205,7 +205,7 @@ public class InputSource {
      * @see #getCharacterStream
      */
     public void setCharacterStream(Reader characterStream) {
-	this.characterStream = characterStream;
+        this.characterStream = characterStream;
     }
     
     /**
@@ -215,7 +215,7 @@ public class InputSource {
      * @see #setCharacterStream
      */
     public Reader getCharacterStream() {
-	return characterStream;
+        return characterStream;
     }
 
     /**
@@ -226,14 +226,14 @@ public class InputSource {
      *        style sheet processing instruction.
      */
     public void setTitle(String title) {
-	this.title = title;
+        this.title = title;
     }
 
     /**
      * Returns the title for this input source.
      */    
     public String getTitle() {
-	return title;
+        return title;
     }
 
     /**
@@ -241,7 +241,7 @@ public class InputSource {
      * @param media A comma separated list with all media.
      */    
     public void setMedia(String media) {
-	this.media = media;
+        this.media = media;
     }
 
     /**
@@ -250,9 +250,9 @@ public class InputSource {
      * @return the media associated to this input source.
      */    
     public String getMedia() {
-	if (media == null) {
-	    return "all";
-	}
-	return media;
+        if (media == null) {
+            return "all";
+        }
+        return media;
     }
 }

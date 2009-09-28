@@ -26,29 +26,29 @@ class Selectors implements SelectorList {
     int      current;
 
     public Selector item(int index) {
-	if ((index < 0) || (index >= current)) {
-	    return null;
-	}
-	return selectors[index];
+        if ((index < 0) || (index >= current)) {
+            return null;
+        }
+        return selectors[index];
     }
 
     public Selector itemSelector(int index) {
-	if ((index < 0) || (index >= current)) {
-	    return null;
-	}
-	return selectors[index];
+        if ((index < 0) || (index >= current)) {
+            return null;
+        }
+        return selectors[index];
     }
 
     public int getLength() {
-	return current;
+        return current;
     }
 
     void addSelector(Selector selector) {
-	if (current == selectors.length) {
-	    Selector[] old = selectors;
-	    selectors = new Selector[old.length + old.length];
-	    System.arraycopy(old, 0, selectors, 0, old.length);
-	}
-	selectors[current++] = selector;
+        if (current == selectors.length) {
+            Selector[] old = selectors;
+            selectors = new Selector[old.length + old.length];
+            System.arraycopy(old, 0, selectors, 0, old.length);
+        }
+        selectors[current++] = selector;
     }
 }

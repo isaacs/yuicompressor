@@ -31,7 +31,7 @@ public class ConditionalSelectorImpl implements ConditionalSelector {
      * An integer indicating the type of <code>Selector</code>
      */
     public short getSelectorType() {
-	return Selector.SAC_CONDITIONAL_SELECTOR;
+        return Selector.SAC_CONDITIONAL_SELECTOR;
     }
     
 
@@ -39,9 +39,9 @@ public class ConditionalSelectorImpl implements ConditionalSelector {
      * Creates a new ConditionalSelectorImpl
      */
     public ConditionalSelectorImpl(SimpleSelector simpleSelector,
-				   Condition condition) {
+                                   Condition condition) {
         this.simpleSelector = simpleSelector;
-	this.condition      = condition;
+        this.condition      = condition;
     }
     
 
@@ -50,14 +50,14 @@ public class ConditionalSelectorImpl implements ConditionalSelector {
      * <p>The simple selector can't be a <code>ConditionalSelector</code>.</p>
      */    
     public SimpleSelector getSimpleSelector() {
-	return simpleSelector;
+        return simpleSelector;
     }
 
     /**
      * Returns the condition to be applied on the simple selector.
      */    
     public Condition getCondition() {
-	return condition;
+        return condition;
     }
 }
 

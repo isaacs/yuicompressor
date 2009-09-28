@@ -41,9 +41,9 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public ConditionalSelector createConditionalSelector(SimpleSelector selector,
-						  Condition condition) 
-	    throws CSSException {
-	return new ConditionalSelectorImpl(selector, condition);
+                                                  Condition condition) 
+            throws CSSException {
+        return new ConditionalSelectorImpl(selector, condition);
     }
 
     /**
@@ -53,7 +53,7 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public SimpleSelector createAnyNodeSelector() throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -63,7 +63,7 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public SimpleSelector createRootNodeSelector() throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -74,8 +74,8 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public NegativeSelector createNegativeSelector(SimpleSelector selector) 
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -90,12 +90,12 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public ElementSelector createElementSelector(String namespaceURI, String localName) 
-	    throws CSSException {
-	if (namespaceURI != null) {
-	    throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
-	} else {
-	    return new ElementSelectorImpl(localName);
-	}
+            throws CSSException {
+        if (namespaceURI != null) {
+            throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        } else {
+            return new ElementSelectorImpl(localName);
+        }
     }
 
     /**
@@ -106,8 +106,8 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public CharacterDataSelector createTextNodeSelector(String data)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -118,8 +118,8 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public CharacterDataSelector createCDataSectionSelector(String data)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -131,10 +131,10 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public ProcessingInstructionSelector 
-	createProcessingInstructionSelector(String target,
-					    String data)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        createProcessingInstructionSelector(String target,
+                                            String data)
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -145,8 +145,8 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public CharacterDataSelector createCommentSelector(String data)
-	    throws CSSException {
-	throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+            throws CSSException {
+        throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
     }
 
     /**
@@ -158,13 +158,13 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public ElementSelector createPseudoElementSelector(String namespaceURI, 
-						String pseudoName) 
-	    throws CSSException {
-	if (namespaceURI != null) {
-	    throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
-	} else {
-	    return new PseudoElementSelectorImpl(pseudoName);
-	}
+                                                String pseudoName) 
+            throws CSSException {
+        if (namespaceURI != null) {
+            throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        } else {
+            return new PseudoElementSelectorImpl(pseudoName);
+        }
     }
 
     /**
@@ -176,9 +176,9 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public DescendantSelector createDescendantSelector(Selector parent,
-						       SimpleSelector descendant)
-	    throws CSSException {
-	return new DescendantSelectorImpl(parent, descendant);
+                                                       SimpleSelector descendant)
+            throws CSSException {
+        return new DescendantSelectorImpl(parent, descendant);
     }
 
     /**
@@ -190,9 +190,9 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */    
     public DescendantSelector createChildSelector(Selector parent,
-						  SimpleSelector child)
-	    throws CSSException {
-	return new ChildSelectorImpl(parent, child);
+                                                  SimpleSelector child)
+            throws CSSException {
+        return new ChildSelectorImpl(parent, child);
     }
 
     /**
@@ -204,14 +204,14 @@ public class SelectorFactoryImpl implements SelectorFactory {
      * @exception CSSException If this selector is not supported.
      */
     public SiblingSelector createDirectAdjacentSelector(short nodeType,
-							Selector child,
-							SimpleSelector directAdjacent)
-	    throws CSSException {
-	if (nodeType != 1) {	    
-	    throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
-	} else {
-	    return new DirectAdjacentSelectorImpl(child, directAdjacent);
-	}
+                                                        Selector child,
+                                                        SimpleSelector directAdjacent)
+            throws CSSException {
+        if (nodeType != 1) {            
+            throw new CSSException(CSSException.SAC_NOT_SUPPORTED_ERR);
+        } else {
+            return new DirectAdjacentSelectorImpl(child, directAdjacent);
+        }
     }
 
 }

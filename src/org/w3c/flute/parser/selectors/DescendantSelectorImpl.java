@@ -30,7 +30,7 @@ public class DescendantSelectorImpl implements DescendantSelector {
      * An integer indicating the type of <code>Selector</code>
      */
     public short getSelectorType() {
-	return Selector.SAC_DESCENDANT_SELECTOR;
+        return Selector.SAC_DESCENDANT_SELECTOR;
     }
 
     /**
@@ -38,7 +38,7 @@ public class DescendantSelectorImpl implements DescendantSelector {
      */
     public DescendantSelectorImpl(Selector parent, SimpleSelector simpleSelector) {
         this.parent = parent;
-	this.simpleSelector = simpleSelector;
+        this.simpleSelector = simpleSelector;
     }
     
         
@@ -46,13 +46,13 @@ public class DescendantSelectorImpl implements DescendantSelector {
      * Returns the parent selector.
      */    
     public Selector getAncestorSelector() {
-	return parent;
+        return parent;
     }
 
     /*
      * Returns the simple selector.
      */    
     public SimpleSelector getSimpleSelector() {
-	return simpleSelector;
+        return simpleSelector;
     }
 }

@@ -77,7 +77,7 @@ public interface DocumentHandler {
      *                         exception.  
      */
     public void namespaceDeclaration(String prefix, String uri) 
-	throws CSSException;
+        throws CSSException;
 
     /**
      * Receive notification of a import statement in the style sheet.
@@ -90,8 +90,8 @@ public interface DocumentHandler {
      *                         exception.
      */
     public void importStyle(String uri, SACMediaList media, 
-			    String defaultNamespaceURI)
-	throws CSSException;
+                            String defaultNamespaceURI)
+        throws CSSException;
 
     /**
      * Receive notification of the beginning of a media statement.

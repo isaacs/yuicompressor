@@ -30,27 +30,27 @@ public class AndConditionImpl implements CombinatorCondition {
      */
     public AndConditionImpl(Condition firstCondition, Condition secondCondition) {
         this.firstCondition = firstCondition;
-	this.secondCondition = secondCondition;
+        this.secondCondition = secondCondition;
     }
     
     /**
      * An integer indicating the type of <code>Condition</code>.
      */    
     public short getConditionType() {
-	return Condition.SAC_AND_CONDITION;
+        return Condition.SAC_AND_CONDITION;
     }
 
     /**
      * Returns the first condition.
      */    
     public Condition getFirstCondition() {
-	return firstCondition;
+        return firstCondition;
     }
 
     /**
      * Returns the second condition.
      */    
     public Condition getSecondCondition() {
-	return secondCondition;
+        return secondCondition;
     }
 }

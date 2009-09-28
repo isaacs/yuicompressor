@@ -28,14 +28,14 @@ public class ClassConditionImpl implements AttributeCondition {
      * Creates a new AttributeConditionImpl
      */
     public ClassConditionImpl(String value) {
-	this.value     = value;
+        this.value     = value;
     }
     
     /**
      * An integer indicating the type of <code>Condition</code>.
      */    
     public short getConditionType() {
-	return Condition.SAC_CLASS_CONDITION;
+        return Condition.SAC_CLASS_CONDITION;
     }
 
     /**
@@ -49,7 +49,7 @@ public class ClassConditionImpl implements AttributeCondition {
      * </ul>
      */    
     public String getNamespaceURI() {
-	return null;
+        return null;
     }
 
     /**
@@ -67,7 +67,7 @@ public class ClassConditionImpl implements AttributeCondition {
      * </ul>
      */
     public String getLocalName() {
-	return null;
+        return null;
     }
 
     /**
@@ -75,7 +75,7 @@ public class ClassConditionImpl implements AttributeCondition {
      * in the original document, <code>false</code> otherwise.
      */
     public boolean getSpecified() {
-	return false;
+        return false;
     }
 
     /**
@@ -84,7 +84,7 @@ public class ClassConditionImpl implements AttributeCondition {
      * the class name (or psedo class name) without the '.' or ':'.
      */
     public String getValue() {
-	return value;
+        return value;
     }
 }
 
