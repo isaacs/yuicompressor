@@ -1,8 +1,4 @@
-/* base.css, part of YUI's CSS Foundation */
-/*#doc .yui-cssbase h1 {
-	font-size:138.5%;  
-}
-*/
+
 p[lang=fr].foo > a {
 	color:red;
 	content:attr("class");
@@ -10,4 +6,9 @@ p[lang=fr].foo > a {
 	background: rgba(200,200,200,0.7);
 	background: #f00;
 }
+/* base.css, part of YUI's CSS Foundation */
+/*#doc .yui-cssbase h1 {
+	font-size:138.5%;  
+}
+*/
 ancestor *.foo parent>older+younger { content:attr(id) " " attr(class); }
