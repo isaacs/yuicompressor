@@ -23,9 +23,7 @@ public class CssCompressor {
     private CssDocumentHandler cssDoc = null;
 
     public CssCompressor (Reader in) throws IOException {
-        // Read the stream...
-        
-        // Use the flute implementation of a SAC parser.
+        // Use the flute implementation of the SAC parser interface
         System.setProperty("org.w3c.css.sac.parser", "org.w3c.flute.parser.Parser");
         
         Parser parser = new Parser();
