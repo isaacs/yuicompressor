@@ -62,6 +62,12 @@ public class CssRulesetHandler {
                 break;
             case Condition.SAC_ATTRIBUTE_CONDITION:
                 System.err.println("Condition.SAC_ATTRIBUTE_CONDITION");
+                AttributeConditionImpl attrCond = (AttributeConditionImpl)c;
+                this.put("[");
+                this.put(attrCond.getLocalName());
+                String attrValue = attrCond.getValue();
+                if (null != attrValue) this.put("=" + attrValue);
+                this.put("]");
                 break;
             case Condition.SAC_BEGIN_HYPHEN_ATTRIBUTE_CONDITION:
                 System.err.println("Condition.SAC_BEGIN_HYPHEN_ATTRIBUTE_CONDITION");
