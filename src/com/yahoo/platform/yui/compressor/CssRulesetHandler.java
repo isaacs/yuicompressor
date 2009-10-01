@@ -18,6 +18,7 @@ public class CssRulesetHandler {
     public CssRulesetHandler (SelectorList selectors) {
         for (int i = 0; i < selectors.getLength(); i ++) {
             System.err.println("\n--------");
+            if (i != 0) this.put(",");
             this.handleSelector(selectors.item(i));
         }
         this.put("{");
@@ -55,13 +56,11 @@ public class CssRulesetHandler {
     private void handleCondition (Condition c) {
         switch (c.getConditionType()) {
             case Condition.SAC_AND_CONDITION:
-                System.err.println("Condition.SAC_AND_CONDITION");
-                AndConditionImpl aci = (AndConditionImpl)c;
-                this.handleCondition(aci.getSecondCondition());
-                this.handleCondition(aci.getFirstCondition());
+                AndConditionImpl andCond = (AndConditionImpl)c;
+                this.handleCondition(andCond.getSecondCondition());
+                this.handleCondition(andCond.getFirstCondition());
                 break;
             case Condition.SAC_ATTRIBUTE_CONDITION:
-                System.err.println("Condition.SAC_ATTRIBUTE_CONDITION");
                 AttributeConditionImpl attrCond = (AttributeConditionImpl)c;
                 this.put("[");
                 this.put(attrCond.getLocalName());
@@ -70,28 +69,34 @@ public class CssRulesetHandler {
                 this.put("]");
                 break;
             case Condition.SAC_BEGIN_HYPHEN_ATTRIBUTE_CONDITION:
-                System.err.println("Condition.SAC_BEGIN_HYPHEN_ATTRIBUTE_CONDITION");
+                // [languages|="fr"]
+                BeginHyphenAttributeConditionImpl hyphenAttrCond = (BeginHyphenAttributeConditionImpl)c;
+                this.put("[" + hyphenAttrCond.getLocalName() + "|=" + hyphenAttrCond.getValue());
                 break;
             case Condition.SAC_CLASS_CONDITION:
                 ClassConditionImpl cci = (ClassConditionImpl)c;
                 this.put("."+cci.getValue());
-                break;
-            case Condition.SAC_CONTENT_CONDITION:
-                System.err.println("Condition.SAC_CONTENT_CONDITION");
                 break;
             case Condition.SAC_ID_CONDITION:
                 IdConditionImpl ici = (IdConditionImpl)c;
                 this.put("#"+ici.getValue());
                 break;
             case Condition.SAC_LANG_CONDITION:
-                System.err.println("Condition.SAC_LANG_CONDITION");
-                
+                // :lang(fr)
+                LangConditionImpl langCond = (LangConditionImpl)c;
+                this.put(":lang(" + langCond.getLang() + ")");
+                break;
+            case Condition.SAC_ONE_OF_ATTRIBUTE_CONDITION:
+                // [values~="10"]
+                OneOfAttributeConditionImpl oneOfAttr = (OneOfAttributeConditionImpl)c;
+                this.put("[" + oneOfAttr.getLocalName() + "~=" + oneOfAttr.getValue() + "]");
+                break;
+
+            case Condition.SAC_CONTENT_CONDITION:
+                System.err.println("Condition.SAC_CONTENT_CONDITION");
                 break;
             case Condition.SAC_NEGATIVE_CONDITION:
                 System.err.println("Condition.SAC_NEGATIVE_CONDITION");
-                break;
-            case Condition.SAC_ONE_OF_ATTRIBUTE_CONDITION:
-                System.err.println("Condition.SAC_ONE_OF_ATTRIBUTE_CONDITION");
                 break;
             case Condition.SAC_ONLY_CHILD_CONDITION:
                 System.err.println("Condition.SAC_ONLY_CHILD_CONDITION");
@@ -107,6 +112,8 @@ public class CssRulesetHandler {
                 break;
             case Condition.SAC_PSEUDO_CLASS_CONDITION:
                 System.err.println("Condition.SAC_PSEUDO_CLASS_CONDITION");
+                PseudoClassConditionImpl pseudoClass = (PseudoClassConditionImpl)c;
+                this.put(":" + pseudoClass.getValue());
                 break;
             default:
                 System.err.println("Condition.hrm?");

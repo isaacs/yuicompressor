@@ -1,14 +1,18 @@
 
-p[lang=fr].foo > a {
+div.foo before::after { content:"foo" }
+
+/*
+p[lang=fr].foo > a, p:lang(fr).foo > a, div[class~=foo] {
 	color:red;
 	content:attr("class");
 	something-else : rgb(120,120,120);
 	background: rgba(200,200,200,0.7);
 	background: #f00;
 }
+*/
 /* base.css, part of YUI's CSS Foundation */
 /*#doc .yui-cssbase h1 {
 	font-size:138.5%;  
 }
 */
-ancestor *.foo parent>older+younger { content:attr(id) " " attr(class); }
+/*ancestor *.foo parent>older+younger div:first-child { content:attr(id) " " attr(class); }*/
