@@ -1,0 +1,39 @@
+
+Tickets in progress:
+ - t2495387-charset-start
+
+Tickets Finished (not yet pushed):
+ - t2060448-remove-semi-bracket (also fixes 2527983)
+ - t2078513-preserve-comment-hack
+
+
+Tickets to Look at:
+ - css
+ http://yuilibrary.com/projects/yuicompressor/ticket/2490091 (also: 2495387)
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527979
+  http://yuilibrary.com/projects/yuicompressor/ticket/2495387
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527977
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527974
+  http://yuilibrary.com/projects/yuicompressor/ticket/2009249
+ - js
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527994 
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527976
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527985
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527975
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527984
+  http://yuilibrary.com/projects/yuicompressor/ticket/2495392
+  http://yuilibrary.com/projects/yuicompressor/ticket/2495399
+  http://yuilibrary.com/projects/yuicompressor/ticket/2415619
+  http://yuilibrary.com/projects/yuicompressor/ticket/1881659
+  http://yuilibrary.com/projects/yuicompressor/ticket/1996049
+ - other
+  http://yuilibrary.com/projects/yuicompressor/ticket/2095077
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527982
+  http://yuilibrary.com/projects/yuicompressor/ticket/2527973
+  http://yuilibrary.com/projects/yuicompressor/ticket/2034233 (dupe?)
+
+
+Other interesting things:
+ - mege in CssCompression changes (1977625?)
+ - improve javascript f() variable name choices
+ - More recent rhino?
