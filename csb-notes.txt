@@ -1,6 +1,7 @@
 
 Tickets in progress:
- - t2495387-charset-start
+t2495387-charset-start
+t2527979-bang-comments (need to wait on junit)
 
 Tickets Finished (not yet pushed):
  - t2060448-remove-semi-bracket (also fixes 2527983)
@@ -10,7 +11,6 @@ Tickets Finished (not yet pushed):
 Tickets to Look at:
  - css
  http://yuilibrary.com/projects/yuicompressor/ticket/2490091 (also: 2495387)
-  http://yuilibrary.com/projects/yuicompressor/ticket/2527979
   http://yuilibrary.com/projects/yuicompressor/ticket/2495387
   http://yuilibrary.com/projects/yuicompressor/ticket/2527977
   http://yuilibrary.com/projects/yuicompressor/ticket/2527974
@@ -35,5 +35,7 @@ Tickets to Look at:
 
 Other interesting things:
  - mege in CssCompression changes (1977625?)
+ - junit
+ - findbugs
  - improve javascript f() variable name choices
  - More recent rhino?
