@@ -6,14 +6,13 @@ t2527979-bang-comments (need to wait on junit)
 Tickets Finished (not yet pushed):
 t2060448-remove-semi-bracket (also fixes 2527983)
 t2078513-preserve-comment-hack
-t2527974-empty-crash
+t2527974-empty-crash (also fixes 2527977, 2009249
+
+
 
 Tickets to Look at:
  - css
   http://yuilibrary.com/projects/yuicompressor/ticket/2490091 (also: 2495387)
-  http://yuilibrary.com/projects/yuicompressor/ticket/2495387
-  http://yuilibrary.com/projects/yuicompressor/ticket/2527977
-  http://yuilibrary.com/projects/yuicompressor/ticket/2009249 (one of these last two may be dupes)
  - js
   http://yuilibrary.com/projects/yuicompressor/ticket/2527994 
   http://yuilibrary.com/projects/yuicompressor/ticket/2527976
