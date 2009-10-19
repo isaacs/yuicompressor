@@ -110,9 +110,6 @@ public class CssCompressor {
         // Remove the spaces after the things that should not have spaces after them.
         css = css.replaceAll("([!{}:;>+\\(\\[,])\\s+", "$1");
 
-        // remove unnecessary semicolons
-        css = css.replaceAll(";+}", "}");
-
         // Replace 0(px,em,%) with 0.
         css = css.replaceAll("([\\s:])(0)(px|em|%|in|cm|mm|pc|pt|ex)", "$1$2");
 
@@ -197,7 +194,7 @@ public class CssCompressor {
         css = css.replaceAll(";;+", ";");
 
         // Remove unneeded final semicolons.
-        css = css.replaceAll(";\\}", "}");
+        css = css.replaceAll(";+\\}", "}");
 
         // Trim the final string (for any leading or trailing white spaces)
         css = css.trim();
