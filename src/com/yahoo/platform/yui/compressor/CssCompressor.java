@@ -86,11 +86,14 @@ public class CssCompressor {
         while (m.find()) {
             String s = m.group();
             s = s.replaceAll(":", "___PSEUDOCLASSCOLON___");
+            // IllegalArgumentException will occur if there is a
+            // dollar sign in the string.
+            // See http://tech.soronthar.com/2007/12/javalangillegalargumentexcepti.html
+            s = s.replaceAll("\\$","\\\\\\$");
             m.appendReplacement(sb, s);
         }
         m.appendTail(sb);
         css = sb.toString();
-        
         // Remove spaces before the things that should not have spaces before them.
         css = css.replaceAll("\\s+([!{};:>+\\(\\)\\],])", "$1");
         
