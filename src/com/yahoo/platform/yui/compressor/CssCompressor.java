@@ -39,7 +39,9 @@ public class CssCompressor {
         startIndex = 0;
         boolean iemac = false;
         boolean preserve = false;
-        sb = new StringBuffer(srcsb.toString());
+        // Preserve this IE hack: CSS hack html>/**/body
+        String str_srcsb = srcsb.toString().replace("html>/**/body", "___IE_HTML_BODY_HACK___");
+        sb = new StringBuffer(str_srcsb);
         while ((startIndex = sb.indexOf("/*", startIndex)) >= 0) {
             preserve = sb.length() > startIndex + 2 && sb.charAt(startIndex + 2) == '!';
             endIndex = sb.indexOf("*/", startIndex + 2);
@@ -66,6 +68,9 @@ public class CssCompressor {
 
         css = sb.toString();
 
+        // Restore this IE hack: CSS hack html>/**/body
+        css = css.replace("___IE_HTML_BODY_HACK___", "html>/**/body");
+
         // Normalize all whitespace strings to single spaces. Easier to work with that way.
         css = css.replaceAll("\\s+", " ");
 
@@ -81,18 +86,29 @@ public class CssCompressor {
         while (m.find()) {
             String s = m.group();
             s = s.replaceAll(":", "___PSEUDOCLASSCOLON___");
+            // IllegalArgumentException will occur if there is a
+            // dollar sign in the string.
+            // See http://tech.soronthar.com/2007/12/javalangillegalargumentexcepti.html
+            s = s.replaceAll("\\$","\\\\\\$");
             m.appendReplacement(sb, s);
         }
         m.appendTail(sb);
         css = sb.toString();
+        // Remove spaces before the things that should not have spaces before them.
         css = css.replaceAll("\\s+([!{};:>+\\(\\)\\],])", "$1");
+        
+        // If there is a @charset, then only allow one, and push to the top of the file.
+        css = css.replaceAll("^(.*)(@charset \"[^\"]*\";)", "$2$1");
+        css = css.replaceAll("^(\\s*@charset [^;]+;\\s*)+", "$1");
+        
+        // Put the space back in some cases, to support stuff like
+        // @media screen and (-webkit-min-device-pixel-ratio:0){
+        css = css.replaceAll("\\band\\(", "and (");       
+        
         css = css.replaceAll("___PSEUDOCLASSCOLON___", ":");
 
         // Remove the spaces after the things that should not have spaces after them.
         css = css.replaceAll("([!{}:;>+\\(\\[,])\\s+", "$1");
-
-        // Add the semicolon where it's missing.
-        css = css.replaceAll("([^;\\}])}", "$1;}");
 
         // Replace 0(px,em,%) with 0.
         css = css.replaceAll("([\\s:])(0)(px|em|%|in|cm|mm|pc|pt|ex)", "$1$2");
@@ -150,7 +166,7 @@ public class CssCompressor {
         css = sb.toString();
 
         // Remove empty rules.
-        css = css.replaceAll("[^\\}]+\\{;\\}", "");
+        css = css.replaceAll("[^\\}\\{]+\\{\\}", "");
 
         if (linebreakpos >= 0) {
             // Some source control tools don't like it when files containing lines longer
@@ -176,6 +192,9 @@ public class CssCompressor {
         // Replace multiple semi-colons in a row by a single one
         // See SF bug #1980989
         css = css.replaceAll(";;+", ";");
+
+        // Remove unneeded final semicolons.
+        css = css.replaceAll(";+\\}", "}");
 
         // Trim the final string (for any leading or trailing white spaces)
         css = css.trim();

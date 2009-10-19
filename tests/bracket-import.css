@@ -1,0 +1,4 @@
+@import "../${TEST}/test.css";
+#foo {
+  some-css : here
+}
