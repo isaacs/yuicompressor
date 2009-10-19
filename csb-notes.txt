@@ -6,7 +6,7 @@ t2527979-bang-comments (need to wait on junit)
 Tickets Finished (not yet pushed):
 t2060448-remove-semi-bracket (also fixes 2527983)
 t2078513-preserve-comment-hack
-t2527974-empty-crash (also fixes 2527977, 2009249
+t2527974-empty-crash (also fixes 2527977, 2009249)
 
 
 
