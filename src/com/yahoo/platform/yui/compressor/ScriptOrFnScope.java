@@ -20,7 +20,8 @@ class ScriptOrFnScope {
     private Hashtable identifiers = new Hashtable();
     private Hashtable hints = new Hashtable();
     private boolean markedForMunging = true;
-    private int varcount = 0;
+    private int thisCount = 0;
+    private JavaScriptIdentifier thisIdentifier;
 
     ScriptOrFnScope(int braceNesting, ScriptOrFnScope parentScope) {
         this.braceNesting = braceNesting;
@@ -39,10 +40,10 @@ class ScriptOrFnScope {
         return parentScope;
     }
 
-    JavaScriptIdentifier declareIdentifier(String symbol) {
+    JavaScriptIdentifier declareIdentifier(String symbol, boolean declareAsVar) {
         JavaScriptIdentifier identifier = (JavaScriptIdentifier) identifiers.get(symbol);
         if (identifier == null) {
-            identifier = new JavaScriptIdentifier(symbol, this);
+            identifier = new JavaScriptIdentifier(symbol, this, declareAsVar);
             identifiers.put(symbol, identifier);
         }
         return identifier;
@@ -51,7 +52,20 @@ class ScriptOrFnScope {
     JavaScriptIdentifier getIdentifier(String symbol) {
         return (JavaScriptIdentifier) identifiers.get(symbol);
     }
-
+    
+    boolean hasIdentifier(String symbol) {
+        return getIdentifier(symbol) != null;
+    }
+    
+    void declareSymbolAsThis(String symbol) {
+        thisIdentifier = declareIdentifier(symbol, false);
+    }
+    
+    JavaScriptIdentifier getThisIdentifier()
+    {
+        return thisIdentifier;
+    }
+    
     void addHint(String variableName, String variableType) {
         hints.put(variableName, variableType);
     }
@@ -63,7 +77,42 @@ class ScriptOrFnScope {
             markedForMunging = false;
         }
     }
-
+    
+    ArrayList<JavaScriptIdentifier> getVarIdentifiers() {
+        ArrayList<JavaScriptIdentifier> result = new ArrayList<JavaScriptIdentifier>();
+        Enumeration elements = identifiers.elements();
+        while (elements.hasMoreElements()) {
+            JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
+            if (i.declaredAsVar()) {
+                result.add(i);
+            }
+        }
+        return result;
+    }
+    
+    int getVarIdentifiersSize()
+    {
+        int size = 0;
+        Enumeration elements = identifiers.elements();
+        while (elements.hasMoreElements()) {
+            JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
+            if (i.declaredAsVar()) {
+                size++;
+            }
+        }
+        return size;
+    }
+    
+    int incrementThisCount()
+    {
+        return ++thisCount;
+    }
+    
+    int getThisCount()
+    {
+        return thisCount;
+    }
+    
     private ArrayList getUsedSymbols() {
         ArrayList result = new ArrayList();
         Enumeration elements = identifiers.elements();
@@ -88,11 +137,11 @@ class ScriptOrFnScope {
         return result;
     }
 
-    int incrementVarCount() {
-        varcount++;
-        return varcount;
+    boolean isMarkedForMunging()
+    {
+        return markedForMunging;
     }
-
+    
     void munge() {
 
         if (!markedForMunging) {
@@ -153,8 +202,7 @@ class ScriptOrFnScope {
         }
 
         for (int i = 0; i < subScopes.size(); i++) {
-            ScriptOrFnScope scope = (ScriptOrFnScope) subScopes.get(i);
-            scope.munge();
+            ((ScriptOrFnScope) subScopes.get(i)).munge();
         }
     }
 }

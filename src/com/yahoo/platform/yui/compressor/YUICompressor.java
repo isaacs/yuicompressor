@@ -23,6 +23,7 @@ public class YUICompressor {
         CmdLineParser.Option typeOpt = parser.addStringOption("type");
         CmdLineParser.Option verboseOpt = parser.addBooleanOption('v', "verbose");
         CmdLineParser.Option nomungeOpt = parser.addBooleanOption("nomunge");
+        CmdLineParser.Option thisAsVarOpt = parser.addBooleanOption("this-var");
         CmdLineParser.Option linebreakOpt = parser.addStringOption("line-break");
         CmdLineParser.Option preserveSemiOpt = parser.addBooleanOption("preserve-semi");
         CmdLineParser.Option disableOptimizationsOpt = parser.addBooleanOption("disable-optimizations");
@@ -88,8 +89,6 @@ public class YUICompressor {
                     usage();
                     System.exit(1);
                 }
-
-                in = new InputStreamReader(new FileInputStream(inputFilename), charset);
             }
 
             int linebreakpos = -1;
@@ -109,7 +108,7 @@ public class YUICompressor {
 
                 try {
 
-                    JavaScriptCompressor compressor = new JavaScriptCompressor(in, new ErrorReporter() {
+                    ErrorReporter reporter = new ErrorReporter() {
 
                         public void warning(String message, String sourceName,
                                 int line, String lineSource, int lineOffset) {
@@ -134,12 +133,8 @@ public class YUICompressor {
                             error(message, sourceName, line, lineSource, lineOffset);
                             return new EvaluatorException(message);
                         }
-                    });
-
-                    // Close the input stream first, and then open the output stream,
-                    // in case the output file should override the input file.
-                    in.close(); in = null;
-
+                    };
+                    
                     if (outputFilename == null) {
                         out = new OutputStreamWriter(System.out, charset);
                     } else {
@@ -147,11 +142,34 @@ public class YUICompressor {
                     }
 
                     boolean munge = parser.getOptionValue(nomungeOpt) == null;
+                    boolean thisAsVar = parser.getOptionValue(thisAsVarOpt) == null;
                     boolean preserveAllSemiColons = parser.getOptionValue(preserveSemiOpt) != null;
                     boolean disableOptimizations = parser.getOptionValue(disableOptimizationsOpt) != null;
 
-                    compressor.compress(out, linebreakpos, munge, verbose,
-                            preserveAllSemiColons, disableOptimizations);
+                    for (int i = 0; i<fileArgs.length; i++) {
+                        String inputFilename = fileArgs[i];
+                        int idx = inputFilename.lastIndexOf('.');
+                        if (idx >= 0 && idx < inputFilename.length() - 1 && !type.equals(inputFilename.substring(idx + 1))) {
+                            throw new IllegalArgumentException("Mixing of JS and CSS files is not allowed");
+                        }
+                        in = new InputStreamReader(new FileInputStream(inputFilename), charset);
+                        JavaScriptCompressor compressor = new JavaScriptCompressor(in, reporter);
+                        
+                        in.close();
+                        in = null;
+                        
+                        compressor.compress(out, linebreakpos, munge, thisAsVar, verbose,
+                                preserveAllSemiColons, disableOptimizations);
+                    }
+                    if (fileArgs.length == 0) {
+                        JavaScriptCompressor compressor = new JavaScriptCompressor(in, reporter);
+                        
+                        in.close();
+                        in = null;
+                        
+                        compressor.compress(out, linebreakpos, munge, thisAsVar, verbose,
+                        preserveAllSemiColons, disableOptimizations);
+                    }
 
                 } catch (EvaluatorException e) {
 
@@ -163,11 +181,10 @@ public class YUICompressor {
 
             } else if (type.equalsIgnoreCase("css")) {
 
-                CssCompressor compressor = new CssCompressor(in);
-
                 // Close the input stream first, and then open the output stream,
                 // in case the output file should override the input file.
-                in.close(); in = null;
+                //in.close();
+                //in = null;
 
                 if (outputFilename == null) {
                     out = new OutputStreamWriter(System.out, charset);
@@ -175,7 +192,28 @@ public class YUICompressor {
                     out = new OutputStreamWriter(new FileOutputStream(outputFilename), charset);
                 }
 
-                compressor.compress(out, linebreakpos);
+                for (int i = 0; i<fileArgs.length; i++) {
+                    String inputFilename = fileArgs[i];
+                    int idx = inputFilename.lastIndexOf('.');
+                    if (idx >= 0 && idx < inputFilename.length() - 1 && !type.equals(inputFilename.substring(idx + 1))) {
+                        throw new IllegalArgumentException("Mixing of JS and CSS files is not allowed");
+                    }
+                    in = new InputStreamReader(new FileInputStream(inputFilename), charset);
+                    CssCompressor compressor = new CssCompressor(in);
+                    
+                    in.close();
+                    in = null;
+                    
+                    compressor.compress(out, linebreakpos);
+                }
+                if (fileArgs.length == 0) {
+                    CssCompressor compressor = new CssCompressor(in);
+                    
+                    in.close();
+                    in = null;
+                    
+                    compressor.compress(out, linebreakpos);
+                }
             }
 
         } catch (CmdLineParser.OptionException e) {
