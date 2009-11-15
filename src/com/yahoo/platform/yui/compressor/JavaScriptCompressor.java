@@ -552,8 +552,13 @@ public class JavaScriptCompressor {
         }
 
         buildSymbolTree();
+
+        // build a table of constant values as read-only variables
+        globalScope.buildConstTable();
+
         // DO NOT TOUCH this.tokens BETWEEN THESE TWO PHASES (BECAUSE OF this.indexedScopes)
         mungeSymboltree();
+
         StringBuffer sb = printSymbolTree(linebreak, preserveAllSemiColons);
 
         out.write(sb.toString());
@@ -843,8 +848,15 @@ public class JavaScriptCompressor {
                             offset > 2 &&
                             getToken(-3).getType() == Token.NAME &&    // variable
                             getToken(-2).getType() == Token.ASSIGN &&  // = this
-                            (getToken(0).getType()  == Token.SEMI || getToken(0).getType()  == Token.COMMA)) { // , or ;
+                            (getToken(0).getType()  == Token.SEMI || getToken(0).getType()  == Token.COMMA)) { // ; or ,
                         currentScope.declareSymbolAsThis(getToken(-3).getValue());
+                    }
+                    break;
+
+                case Token.STRING:
+                case Token.NUMBER:
+                    if (mode == BUILDING_SYMBOL_TREE && getToken(0).getType() != Token.OBJECTLIT) {
+                        currentScope.incrementConstValueCount(token.getValue());
                     }
                     break;
 
@@ -1064,6 +1076,13 @@ public class JavaScriptCompressor {
                     parseCatch();
                     break;
 
+                case Token.STRING:
+                case Token.NUMBER:
+                    if (mode == BUILDING_SYMBOL_TREE && getToken(0).getType() != Token.OBJECTLIT) {
+                        scope.incrementConstValueCount(token.getValue());
+                    }
+                    break;
+
                 case Token.CONDCOMMENT:
                     if (mode == BUILDING_SYMBOL_TREE) {
                         protectScopeFromObfuscation(scope);
@@ -1203,32 +1222,45 @@ public class JavaScriptCompressor {
             // one var statement and this as var optimizations
             if (!disableOptimizations && !processedScopes.contains(currentScope)) {
                 processedScopes.add(currentScope);
-                ArrayList<JavaScriptIdentifier> declaredIdentifiers = currentScope.getVarIdentifiers();
+                ArrayList<JavaScriptIdentifier> declaredIdentifiers = currentScope.getIdentifiers();
 
                 JavaScriptIdentifier thisIdentifier = currentScope.getThisIdentifier();
+                Enumeration constValues = currentScope.getConstValues();
                 int len = declaredIdentifiers.size();
-                //if (len > 1 || (thisAsVar && thisIdentifier != null && (len == 0 || declaredIdentifiers.get(0) != thisIdentifier))) {
-                if (len > 1 || (thisAsVar && thisIdentifier != null && thisIdentifier.getMungedValue() != null)) {
+                if (len > 0 || constValues.hasMoreElements() || (thisAsVar && thisIdentifier != null && thisIdentifier.getMungedValue() != null)) {
                     result.append("var ");
+                    int i = 0;
                     boolean thisDeclared = false;
-                    for (int i = 0; i<len; i++) {
-                        identifier = (JavaScriptIdentifier) declaredIdentifiers.get(i);
-                        symbol = identifier.getValue();
-                        if (identifier.getRefcount() == 0) {
-                            warn("The symbol " + symbol + " is declared but is apparently never used.", false);
-                            continue;
+                    if (len > 0) {
+                        for (; i<len; i++) {
+                            identifier = (JavaScriptIdentifier) declaredIdentifiers.get(i);
+                            symbol = identifier.getValue();
+                            if (identifier.getRefcount() == 0) {
+                                warn("The symbol " + symbol + " is declared but is apparently never used.", false);
+                            }
+                            String mungedValue = identifier.getMungedValue();
+                            if (mungedValue != null) {
+                                result.append(mungedValue);
+                            } else {
+                                result.append(identifier.getValue());
+                            }
+                            if (identifier == thisIdentifier) {
+                                result.append("=this");
+                                thisDeclared = true;
+                            }
+                            result.append(',');
                         }
-                        String mungedValue = identifier.getMungedValue();
-                        if (mungedValue != null) {
-                            result.append(mungedValue);
-                        } else {
-                            result.append(identifier.getValue());
-                        }
-                        if (identifier == thisIdentifier) {
-                            result.append("=this");
-                            thisDeclared = true;
-                        }
-                        result.append(',');
+                    }
+                    
+                    while (constValues.hasMoreElements()) {
+                        String str = (String) constValues.nextElement();
+                        identifier = currentScope.getConstValueIdentifier(str);
+                        //if (identifier != null) {
+                            result.append(identifier.getMungedValue());
+                            result.append('=');
+                            result.append(str);
+                            result.append(',');
+                        //}
                     }
                     
                     if (thisAsVar && !thisDeclared && thisIdentifier != null && thisIdentifier.getMungedValue() != null) {
@@ -1254,16 +1286,27 @@ public class JavaScriptCompressor {
 
                     } else {
 
+                        // skip ";variable;"
+                        if (!inForLoop && offset > 2 && 
+                                (getToken(-2).getType() == Token.SEMI) &&
+                                 getToken(0) .getType() == Token.SEMI) {
+                            offset++;
+                            break;
+                        }
+
                         identifier = getIdentifier(symbol, currentScope);
 
                         if (identifier != null) {
 
                             // skip unused declared variables with assignment
-                            if (identifier.getRefcount() == 0 &&
-                                    getToken(0).getType() == Token.ASSIGN &&
-                                    (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.COMMA)) {
-                                offset += 3;
-                                break;
+                            if (identifier.getRefcount() == 0 && getToken(0).getType() == Token.ASSIGN) {
+                                if (getToken(2).getType() == Token.SEMI || getToken(2).getType() == Token.COMMA) {
+                                    offset += 3;
+                                    break;
+                                // only one unused var in this scope
+                                //} else if (getToken(-2).getType() != Token.VAR && currentScope.getVarIdentifiersSize() == 1) {
+                                    //result.append("var ");
+                                }
                             }
 
                             if (currentScope != globalScope &&
@@ -1272,17 +1315,7 @@ public class JavaScriptCompressor {
                                     (!processedScopes.contains(currentScope) || currentScope.getVarIdentifiersSize() == 1)) {
                                 warn("The symbol " + symbol + " is declared but is apparently never used.", true);
                             }
-                        }
 
-                        // skip ";variable;"
-                        if (!inForLoop && offset > 2 && 
-                                (getToken(-2).getType() == Token.SEMI) &&
-                                 getToken(0) .getType() == Token.SEMI) {
-                            offset++;
-                            break;
-                        }
-                        
-                        if (identifier != null) {
                             // skip x = this; if x as this was already declared
                             if (thisAsVar &&
                                     identifier == currentScope.getThisIdentifier() &&
@@ -1304,11 +1337,32 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.REGEXP:
+                    result.append(symbol);
+                    break;
+
                 case Token.STRING:
+                    if (getToken(0).getType() != Token.OBJECTLIT) {
+                        identifier = currentScope.getConstValueIdentifier(symbol);
+                        if (identifier != null) {
+                            // insert space after case, throw return or typeof and variable
+                            token = getToken(-2);
+                            if (token.getType() == Token.CASE || token.getType() == Token.THROW ||
+                                    token.getType() == Token.RETURN || token.getType() == Token.TYPEOF) {
+                                result.append(' ');
+                            }
+                            result.append(identifier.getMungedValue());
+                            break;
+                        }
+                    }
                     result.append(symbol);
                     break;
 
                 case Token.NUMBER:
+                    identifier = currentScope.getConstValueIdentifier(symbol);
+                    if (identifier != null) {
+                        result.append(identifier.getMungedValue());
+                        break;
+                    }
                     // cut of leading zero
                     if (!disableOptimizations && symbol.startsWith("0.")) {
                         result.append(symbol.substring(1));
@@ -1494,19 +1548,22 @@ public class JavaScriptCompressor {
                     break;
                     
                 case Token.VAR:
-                    if (currentScope.getVarIdentifiersSize() > 1 || (thisAsVar && currentScope.getThisIdentifier() != null)) {
+                    int identifiersCount = currentScope.getVarIdentifiersSize();
+                    if (identifiersCount > 0 || (thisAsVar && currentScope.getThisIdentifier() != null)) {
                         if (getToken(1).getType() == Token.SEMI) {
                             offset += 2;
                         }
                         break;
                     }
-                    /*
+
+                    /* * /
                     token = getToken(0);
                     identifier = currentScope.getIdentifier(token.getValue());
                     if (disableOptimizations || identifier == null ||
                             identifier.getType() == Token.NAME &&
                             currentScope.getVarIdentifiersSize() == 1 &&
-                            identifier != currentScope.getThisIdentifier()) {*/
+                            identifier != currentScope.getThisIdentifier()) {
+                    /* */
                         result.append("var ");
                     //}
                     break;
