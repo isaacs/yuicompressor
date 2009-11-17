@@ -19,10 +19,12 @@ class JavaScriptIdentifier extends JavaScriptToken {
     private String mungedValue;
     private ScriptOrFnScope declaredScope;
     private boolean markedForMunging = true;
+    private boolean declaredAsVar;
 
-    JavaScriptIdentifier(String value, ScriptOrFnScope declaredScope) {
+    JavaScriptIdentifier(String value, ScriptOrFnScope declaredScope, boolean declaredAsVar) {
         super(Token.NAME, value);
         this.declaredScope = declaredScope;
+        this.declaredAsVar = declaredAsVar;
     }
 
     ScriptOrFnScope getDeclaredScope() {
@@ -43,6 +45,10 @@ class JavaScriptIdentifier extends JavaScriptToken {
 
     boolean isMarkedForMunging() {
         return markedForMunging;
+    }
+
+    boolean declaredAsVar() {
+        return declaredAsVar;
     }
 
     void incrementRefcount() {

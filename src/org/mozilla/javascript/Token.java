@@ -109,7 +109,7 @@ public class Token
         REGEXP         = 47,
         BINDNAME       = 48,
         THROW          = 49,
-        RETHROW        = 50, // rethrow caught execetion: catch (e if ) use it
+        RETHROW        = 50, // rethrow caught exception: catch (e if ) use it
         IN             = 51,
         INSTANCEOF     = 52,
         LOCAL_LOAD     = 53,
@@ -121,7 +121,7 @@ public class Token
         ENUM_NEXT      = 59,
         ENUM_ID        = 60,
         THISFN         = 61,
-        RETURN_RESULT  = 62, // to return prevoisly stored return result
+        RETURN_RESULT  = 62, // to return previously stored return result
         ARRAYLIT       = 63, // array literal
         OBJECTLIT      = 64, // object literal
         GET_REF        = 65, // *reference

@@ -19,8 +19,10 @@ class ScriptOrFnScope {
     private ArrayList subScopes;
     private Hashtable identifiers = new Hashtable();
     private Hashtable hints = new Hashtable();
+    private Hashtable strings = new Hashtable();
     private boolean markedForMunging = true;
-    private int varcount = 0;
+    private int thisCount = 0;
+    private JavaScriptIdentifier thisIdentifier;
 
     ScriptOrFnScope(int braceNesting, ScriptOrFnScope parentScope) {
         this.braceNesting = braceNesting;
@@ -39,10 +41,10 @@ class ScriptOrFnScope {
         return parentScope;
     }
 
-    JavaScriptIdentifier declareIdentifier(String symbol) {
+    JavaScriptIdentifier declareIdentifier(String symbol, boolean declareAsVar) {
         JavaScriptIdentifier identifier = (JavaScriptIdentifier) identifiers.get(symbol);
         if (identifier == null) {
-            identifier = new JavaScriptIdentifier(symbol, this);
+            identifier = new JavaScriptIdentifier(symbol, this, declareAsVar);
             identifiers.put(symbol, identifier);
         }
         return identifier;
@@ -51,7 +53,19 @@ class ScriptOrFnScope {
     JavaScriptIdentifier getIdentifier(String symbol) {
         return (JavaScriptIdentifier) identifiers.get(symbol);
     }
-
+    
+    boolean hasIdentifier(String symbol) {
+        return getIdentifier(symbol) != null;
+    }
+    
+    void declareSymbolAsThis(String symbol) {
+        thisIdentifier = declareIdentifier(symbol, false);
+    }
+    
+    JavaScriptIdentifier getThisIdentifier() {
+        return thisIdentifier;
+    }
+    
     void addHint(String variableName, String variableType) {
         hints.put(variableName, variableType);
     }
@@ -63,7 +77,118 @@ class ScriptOrFnScope {
             markedForMunging = false;
         }
     }
+    
+    ArrayList<JavaScriptIdentifier> getIdentifiers() {
+        return getIdentifiers(true); 
+    }
+    
+    ArrayList<JavaScriptIdentifier> getIdentifiers(boolean onlyDeclaredAsVar) {
+        ArrayList<JavaScriptIdentifier> result = new ArrayList<JavaScriptIdentifier>();
+        Enumeration elements = identifiers.elements();
+        while (elements.hasMoreElements()) {
+            JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
+            if (!onlyDeclaredAsVar || i.declaredAsVar()) {
+                result.add(i);
+            }
+        }
+        return result;
+    }
+    
+    int getVarIdentifiersSize() {
+        int size = 0;
+        Enumeration elements = identifiers.elements();
+        while (elements.hasMoreElements()) {
+            JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
+            if (i.declaredAsVar()) {
+                size++;
+            }
+        }
+        return size;
+    }
 
+
+    int incrementConstValueCount(String value) {
+        if (parentScope == null) {
+            return 0;
+        }
+        Integer count = (Integer)strings.get(value);
+        if (count == null) {
+            count = new Integer(0);
+        }
+        int c = count.intValue() + 1;
+        strings.put(value, c);
+        parentScope.incrementConstValueCount(value);
+        return c;
+    }
+
+    JavaScriptIdentifier getConstValueIdentifier(String value) {
+        return getConstValueIdentifier(value, false);
+    }
+    
+    private JavaScriptIdentifier getConstValueIdentifier(String value, boolean onlyCurrentScope) {
+        JavaScriptIdentifier identifier;
+        ScriptOrFnScope scope = this;
+        do {
+            identifier = scope.getIdentifier("const_" + value);
+            if (identifier != null) {
+                return identifier;
+            }
+            scope = scope.parentScope;
+        } while (!onlyCurrentScope && scope != null);
+        return null;
+    }
+    
+    Enumeration getConstValues() {
+        return strings.keys();
+    }
+    
+    void buildConstTable() {
+        Enumeration elements = strings.keys();
+        Hashtable symbols = getFreeSymbols();
+        int pickFromSet = ((Integer) symbols.get("set")).intValue();
+        ArrayList freeSymbols = (ArrayList) symbols.get("symbols");
+        String mungedValue = (String)freeSymbols.remove(0);
+        JavaScriptIdentifier identifier;
+        while (elements.hasMoreElements()) {
+            String value = (String) elements.nextElement();
+            int count = ((Integer)strings.get(value)).intValue();
+            if (count > 1 && getConstValueIdentifier(value) == null && mungedValue.length() < value.length()) {
+                identifier = declareIdentifier("const_" + value, false);
+                identifier.incrementRefcount();
+                identifier.setMungedValue(mungedValue);
+                mungedValue = (String)freeSymbols.remove(0);
+                if (freeSymbols.size() == 0) {
+                    pickFromSet++;
+                    if (pickFromSet == 2) {
+                        freeSymbols.addAll(JavaScriptCompressor.twos);
+                    } else if (pickFromSet == 3) {
+                        freeSymbols.addAll(JavaScriptCompressor.threes);
+                    } else {
+                        throw new IllegalStateException("The YUI Compressor ran out of symbols. Aborting...");
+                    }
+                    // It is essential to remove the symbols already used in
+                    // the containing scopes, or some of the variables declared
+                    // in the containing scopes will be redeclared, which can
+                    // lead to errors.
+                    freeSymbols.removeAll(getAllUsedSymbols());
+                }
+            } else {
+                strings.remove(value);
+            }
+        }
+        for (int i = 0; i < subScopes.size(); i++) {
+            ((ScriptOrFnScope) subScopes.get(i)).buildConstTable();
+        }
+    }
+
+    int incrementThisCount() {
+        return ++thisCount;
+    }
+    
+    int getThisCount() {
+        return thisCount;
+    }
+    
     private ArrayList getUsedSymbols() {
         ArrayList result = new ArrayList();
         Enumeration elements = identifiers.elements();
@@ -88,9 +213,32 @@ class ScriptOrFnScope {
         return result;
     }
 
-    int incrementVarCount() {
-        varcount++;
-        return varcount;
+    boolean isMarkedForMunging() {
+        return markedForMunging;
+    }
+
+    Hashtable getFreeSymbols() {
+        int pickFromSet = 1;
+        ArrayList freeSymbols = new ArrayList();
+        freeSymbols.addAll(JavaScriptCompressor.ones);
+        freeSymbols.removeAll(getAllUsedSymbols());
+        if (freeSymbols.size() == 0) {
+            freeSymbols.addAll(JavaScriptCompressor.twos);
+            pickFromSet = 2;
+            freeSymbols.removeAll(getAllUsedSymbols());
+            if (freeSymbols.size() == 0) {
+                freeSymbols.addAll(JavaScriptCompressor.threes);
+                pickFromSet = 3;
+                freeSymbols.removeAll(getAllUsedSymbols());
+            }
+            if (freeSymbols.size() == 0) {
+                throw new IllegalStateException("The YUI Compressor ran out of symbols. Aborting...");
+            }
+        }
+        Hashtable result = new Hashtable();
+        result.put("set", pickFromSet);
+        result.put("symbols", freeSymbols);
+        return result;
     }
 
     void munge() {
@@ -100,28 +248,12 @@ class ScriptOrFnScope {
             return;
         }
 
-        int pickFromSet = 1;
-
         // Do not munge symbols in the global scope!
         if (parentScope != null) {
 
-            ArrayList freeSymbols = new ArrayList();
-
-            freeSymbols.addAll(JavaScriptCompressor.ones);
-            freeSymbols.removeAll(getAllUsedSymbols());
-            if (freeSymbols.size() == 0) {
-                pickFromSet = 2;
-                freeSymbols.addAll(JavaScriptCompressor.twos);
-                freeSymbols.removeAll(getAllUsedSymbols());
-            }
-            if (freeSymbols.size() == 0) {
-                pickFromSet = 3;
-                freeSymbols.addAll(JavaScriptCompressor.threes);
-                freeSymbols.removeAll(getAllUsedSymbols());
-            }
-            if (freeSymbols.size() == 0) {
-                throw new IllegalStateException("The YUI Compressor ran out of symbols. Aborting...");
-            }
+            Hashtable symbols = getFreeSymbols();
+            int pickFromSet = ((Integer) symbols.get("set")).intValue();
+            ArrayList freeSymbols = (ArrayList) symbols.get("symbols");
 
             Enumeration elements = identifiers.elements();
             while (elements.hasMoreElements()) {
@@ -143,18 +275,19 @@ class ScriptOrFnScope {
 
                 String mungedValue;
                 JavaScriptIdentifier identifier = (JavaScriptIdentifier) elements.nextElement();
-                if (identifier.isMarkedForMunging()) {
-                    mungedValue = (String) freeSymbols.remove(0);
-                } else {
-                    mungedValue = identifier.getValue();
+                if (identifier.getMungedValue() == null) {
+                    if (identifier.isMarkedForMunging()) {
+                        mungedValue = (String) freeSymbols.remove(0);
+                    } else {
+                        mungedValue = identifier.getValue();
+                    }
+                    identifier.setMungedValue(mungedValue);
                 }
-                identifier.setMungedValue(mungedValue);
             }
         }
 
         for (int i = 0; i < subScopes.size(); i++) {
-            ScriptOrFnScope scope = (ScriptOrFnScope) subScopes.get(i);
-            scope.munge();
+            ((ScriptOrFnScope) subScopes.get(i)).munge();
         }
     }
 }
