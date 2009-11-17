@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+
+<project name="cypress" default="jar" basedir="..">
+
+  <property name="cypress.dir"     value="${basedir}" />  <!-- home directory -->
+
+  <property name="version"  value="1.0-b1" />
+    
+  <property name="src.dir"     value="${cypress.dir}/src" />
+  <property name="lib.dir"     value="${cypress.dir}/lib" />
+
+  <property name="build.dir"   value="${cypress.dir}/build/cypress" />
+  
+  <property name="build.bin.dir"      value="${build.dir}/bin" />
+  <property name="build.classes.dir"  value="${build.dir}/classes" />
+  <property name="build.crossref.dir" value="${build.dir}/crossref" />
+  <property name="build.javadoc.dir"  value="${build.dir}/api" />
+  
+  <!-- =================================================================== -->
+  <!-- Compiles the source code                                            -->
+  <!-- =================================================================== -->
+  <target name="compile">
+    
+       <mkdir dir="${build.classes.dir}" />
+
+       <javac
+            srcdir     = "${src.dir}"
+            destdir    = "${build.classes.dir}"
+            debug="on"
+            deprecation="off"
+            optimize="off" >
+            <include name="cypress/**" />
+       </javac>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the jar archive                                             -->
+  <!-- =================================================================== -->
+  <target name="jar" depends="compile">
+
+    <mkdir dir="${build.bin.dir}"/>  
+
+    <jar jarfile="${build.bin.dir}/cypress-${version}.jar"
+         basedir="${build.classes.dir}"
+         compress="true"
+         includes="cypress/**" />
+
+  </target>  
+    
+  <target name="crossref">
+
+      <mkdir dir="${build.crossref.dir}" />
+
+      <java classname="j2h" fork="yes">
+         <arg line="-d ${build.crossref.dir} -js ${src.dir}/cypress" />
+         <classpath>
+           <pathelement location="${lib.dir}/j2h.jar" />
+         </classpath>          
+      </java>
+
+  </target>
+
+  <target name="javadoc">
+  
+      <mkdir dir="${build.javadoc.dir}" />
+
+      <javadoc packagenames="cypress.*"
+               sourcepath="${src.dir}"
+               destdir="${build.javadoc.dir}"
+               author="false"
+               version="false"
+               windowtitle="Cypress - CSS Parser"
+               doctitle="Cypress - CSS Parser"
+               bottom="Copyright &#169; 2001, 2002 Gerald Bauer. All Rights Reserved." />
+   </target>
+  
+</project>
