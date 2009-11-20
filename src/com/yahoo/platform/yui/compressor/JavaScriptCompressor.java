@@ -909,7 +909,6 @@ public class JavaScriptCompressor {
 
     private void checkEvalStatement()
     {
-        JavaScriptToken token;
         ScriptOrFnScope scope = getCurrentScope();
 
         // if eval has a hint
@@ -1189,7 +1188,7 @@ public class JavaScriptCompressor {
         JavaScriptToken token;
         ScriptOrFnScope currentScope;
         JavaScriptIdentifier identifier;
-        ArrayList<ScriptOrFnScope> processedScopes = new ArrayList<ScriptOrFnScope>();
+        ArrayList processedScopes = new ArrayList();
 
         int length = tokens.size();
         StringBuffer result = new StringBuffer();
@@ -1222,7 +1221,7 @@ public class JavaScriptCompressor {
             // one var statement and this as var optimizations
             if (!disableOptimizations && !processedScopes.contains(currentScope)) {
                 processedScopes.add(currentScope);
-                ArrayList<JavaScriptIdentifier> declaredIdentifiers = currentScope.getIdentifiers();
+                ArrayList declaredIdentifiers = currentScope.getIdentifiers();
 
                 JavaScriptIdentifier thisIdentifier = currentScope.getThisIdentifier();
                 Enumeration constValues = currentScope.getConstValues();
@@ -1578,6 +1577,12 @@ public class JavaScriptCompressor {
                     
                 case Token.FOR:
                     result.append("for");
+                    
+                    // hack for "for each" statement
+                    token = getToken(0);
+                    if (token.getType() == Token.NAME && "each".equals(token.getValue())) {
+                        result.append(' ');
+                    }
                     forLoopParensNesting = parensNesting;
                     inForLoop = true;
                     break;
