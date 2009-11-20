@@ -78,12 +78,12 @@ class ScriptOrFnScope {
         }
     }
     
-    ArrayList<JavaScriptIdentifier> getIdentifiers() {
+    ArrayList getIdentifiers() {
         return getIdentifiers(true); 
     }
     
-    ArrayList<JavaScriptIdentifier> getIdentifiers(boolean onlyDeclaredAsVar) {
-        ArrayList<JavaScriptIdentifier> result = new ArrayList<JavaScriptIdentifier>();
+    ArrayList getIdentifiers(boolean onlyDeclaredAsVar) {
+        ArrayList result = new ArrayList();
         Enumeration elements = identifiers.elements();
         while (elements.hasMoreElements()) {
             JavaScriptIdentifier i = (JavaScriptIdentifier) elements.nextElement();
@@ -115,10 +115,10 @@ class ScriptOrFnScope {
         if (count == null) {
             count = new Integer(0);
         }
-        int c = count.intValue() + 1;
+        Integer c = new Integer(count.intValue() + 1);
         strings.put(value, c);
         parentScope.incrementConstValueCount(value);
-        return c;
+        return c.intValue();
     }
 
     JavaScriptIdentifier getConstValueIdentifier(String value) {
@@ -236,7 +236,7 @@ class ScriptOrFnScope {
             }
         }
         Hashtable result = new Hashtable();
-        result.put("set", pickFromSet);
+        result.put("set", new Integer(pickFromSet));
         result.put("symbols", freeSymbols);
         return result;
     }
