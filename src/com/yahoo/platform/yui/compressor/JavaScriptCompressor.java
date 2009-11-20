@@ -1577,6 +1577,12 @@ public class JavaScriptCompressor {
                     
                 case Token.FOR:
                     result.append("for");
+                    
+                    // hack for "for each" statement
+                    token = getToken(0);
+                    if (token.getType() == Token.NAME && "each".equals(token.getValue())) {
+                        result.append(' ');
+                    }
                     forLoopParensNesting = parensNesting;
                     inForLoop = true;
                     break;
